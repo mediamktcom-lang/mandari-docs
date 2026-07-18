@@ -894,5 +894,138 @@ Ogni pratica conclusa migliora la conoscenza che Mandari ha del contesto amminis
 
 ✓ L'obiettivo della partnership è generare benefici concreti sia per il cittadino sia per il professionista.
 
+---
+
+# 11. Fase 7 - Fidelizzazione
+
+## Scopo
+
+La fidelizzazione rappresenta il risultato naturale del rapporto che si crea tra il cittadino e Mandari.
+
+L'obiettivo non è trattenere l'utente attraverso vincoli, notifiche continue o meccanismi di dipendenza, ma costruire nel tempo un livello di fiducia tale da rendere Mandari il primo punto di riferimento per la gestione della propria vita amministrativa.
+
+Ogni interazione con l'applicazione contribuisce ad aumentare il valore del Fascicolo Amministrativo e a migliorare la qualità dell'assistenza fornita.
+
+---
+
+## La fiducia come elemento centrale
+
+Mandari costruisce la propria credibilità mantenendo costantemente le promesse fatte all'utente.
+
+Ogni volta che:
+
+- individua un'opportunità realmente disponibile;
+- ricorda una scadenza importante;
+- interpreta correttamente un documento;
+- organizza una pratica;
+- indirizza verso il professionista più adatto;
+
+rafforza il rapporto di fiducia con il cittadino.
+
+La fiducia non nasce da una singola funzionalità, ma dalla continuità delle esperienze positive.
+
+---
+
+## Un Fascicolo che cresce con il cittadino
+
+Il Fascicolo Amministrativo non è un archivio statico.
+
+Accompagna il cittadino durante tutta la sua vita.
+
+Con il passare del tempo registra eventi, documenti, pratiche concluse, scadenze, agevolazioni ottenute e cambiamenti del nucleo amministrativo.
+
+Ogni nuovo elemento rende Mandari più precisa, più utile e più consapevole del contesto dell'utente.
+
+Il valore del Fascicolo aumenta progressivamente insieme alla storia amministrativa della persona.
+
+---
+
+## Mandari come memoria amministrativa
+
+Con il tempo Mandari diventa il luogo in cui il cittadino conserva la propria memoria amministrativa.
+
+L'utente non utilizza più l'applicazione soltanto per risolvere un problema.
+
+La consulta spontaneamente per ricordare, verificare o recuperare informazioni.
+
+Ad esempio:
+
+- quando è stata presentata una domanda;
+- dove è conservato un documento;
+- quale professionista ha seguito una pratica;
+- quali agevolazioni sono già state richieste;
+- quali scadenze sono previste nei mesi successivi.
+
+Mandari diventa il punto di accesso alla storia amministrativa del cittadino.
+
+---
+
+## Una relazione che evolve
+
+La relazione tra il cittadino e Mandari evolve nel tempo.
+
+All'inizio l'applicazione aiuta l'utente a comprendere la propria situazione.
+
+Successivamente organizza documenti, scadenze e opportunità.
+
+Infine diventa il luogo naturale nel quale il cittadino sceglie di iniziare ogni nuovo percorso amministrativo o personale.
+
+Mandari non accompagna il cittadino in una singola pratica.
+
+Lo accompagna durante l'intero percorso della sua vita amministrativa.
+
+---
+
+## Il valore del tempo
+
+Ogni anno di utilizzo aumenta il patrimonio informativo custodito da Mandari.
+
+Nuovi documenti, nuove pratiche, nuovi eventi familiari e nuove esperienze arricchiscono il Fascicolo Amministrativo.
+
+Questo patrimonio permette all'applicazione di fornire suggerimenti sempre più personalizzati e di ridurre progressivamente il lavoro richiesto all'utente.
+
+Il tempo non rappresenta semplicemente la durata dell'abbonamento.
+
+Rappresenta un investimento nella qualità e nella completezza del proprio Fascicolo Amministrativo.
+
+---
+
+## Una fidelizzazione fondata sull'utilità
+
+Mandari non cerca di impedire all'utente di abbandonare il prodotto.
+
+Al contrario, costruisce ogni giorno motivi concreti per continuare ad utilizzarlo.
+
+La fidelizzazione nasce dalla percezione di affidabilità, dalla semplicità di utilizzo e dal valore accumulato nel tempo.
+
+Il cittadino continua ad utilizzare Mandari perché riconosce nell'applicazione il luogo più semplice, organizzato e sicuro per gestire la propria vita amministrativa.
+
+---
+
+## Principi di Prodotto
+
+- La fiducia rappresenta il principale elemento di fidelizzazione.
+- Ogni interazione deve aumentare il valore del Fascicolo Amministrativo.
+- Il Fascicolo cresce insieme alla storia del cittadino.
+- Mandari diventa la memoria amministrativa dell'utente.
+- Il valore del prodotto aumenta con il tempo.
+- La fidelizzazione nasce dall'utilità e non da meccanismi artificiali di coinvolgimento.
+
+---
+
+## Decisioni Congelate
+
+✓ La fidelizzazione è fondata sulla fiducia e non sulla dipendenza.
+
+✓ Il Fascicolo Amministrativo aumenta di valore nel corso degli anni.
+
+✓ Mandari diventa la memoria amministrativa del cittadino.
+
+✓ Ogni utilizzo contribuisce ad arricchire il patrimonio informativo dell'utente.
+
+✓ Il valore dell'applicazione cresce proporzionalmente alla storia amministrativa costruita insieme al cittadino.
+
+✓ L'obiettivo finale è fare di Mandari il primo punto di riferimento per ogni decisione amministrativa della persona.
+
 
 
