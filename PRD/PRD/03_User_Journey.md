@@ -770,4 +770,129 @@ Con il passare del tempo, l'applicazione diventa il primo luogo nel quale il cit
 
 ✓ L'obiettivo finale è fare in modo che Mandari diventi il primo luogo in cui il cittadino sceglie di entrare quando deve capire come affrontare un problema amministrativo o trovare una soluzione ad un proprio bisogno.
 
+---
+
+# 10. Fase 6 - Il Primo Contatto con un Professionista
+
+## Scopo
+
+Uno degli obiettivi fondamentali di Mandari è ridurre la distanza tra il cittadino e il professionista.
+
+Mandari non sostituisce CAF, Patronati, Commercialisti, Consulenti del Lavoro o altri professionisti.
+
+Li prepara a lavorare meglio.
+
+L'applicazione accompagna il cittadino nella comprensione della propria situazione amministrativa e raccoglie tutte le informazioni necessarie prima del contatto umano.
+
+Il professionista riceve così un cliente già informato, con una documentazione organizzata e con una richiesta chiara.
+
+---
+
+## Quando nasce il contatto
+
+Il contatto con un professionista può essere suggerito in diversi momenti del percorso dell'utente.
+
+Ad esempio:
+
+- SPETTA individua un'agevolazione che richiede una verifica o una presentazione della domanda.
+- CARTA analizza un documento che necessita di un approfondimento professionale.
+- DATA ricorda una scadenza che richiede un intervento operativo.
+- AFFIDO individua la necessità di rivolgersi ad uno specialista.
+
+In tutti questi casi è Mandari a suggerire il momento corretto per coinvolgere un professionista.
+
+---
+
+## Un cittadino preparato
+
+Prima del contatto, Mandari aiuta l'utente a comprendere:
+
+- la propria situazione;
+- il motivo della consulenza;
+- i documenti necessari;
+- le informazioni che saranno richieste;
+- gli eventuali passaggi successivi.
+
+L'obiettivo è ridurre dubbi, errori e tempi di gestione.
+
+Il cittadino arriva all'appuntamento preparato.
+
+---
+
+## Un professionista più efficiente
+
+Mandari non richiede ai professionisti di modificare il proprio modo di lavorare.
+
+Non impone nuovi software.
+
+Non sostituisce i gestionali già utilizzati.
+
+L'applicazione produce documentazione ordinata, coerente e facilmente consultabile.
+
+Il professionista può così concentrarsi sull'attività a maggior valore aggiunto, riducendo il tempo dedicato alla raccolta delle informazioni di base.
+
+Mandari migliora il lavoro del professionista senza modificarne gli strumenti.
+
+---
+
+## Il valore della partnership
+
+Le partnership rappresentano un elemento strategico del progetto.
+
+Mandari ricerca collaborazioni con:
+
+- CAF;
+- Patronati;
+- Commercialisti;
+- Consulenti del Lavoro;
+- Fiscalisti;
+- Aziende che gestiscono programmi di welfare;
+- altri professionisti e organizzazioni che operano a supporto del cittadino.
+
+Le partnership non hanno l'obiettivo di vincolare il professionista all'utilizzo di Mandari.
+
+L'obiettivo è creare un beneficio reciproco.
+
+Il cittadino riceve un supporto migliore.
+
+Il professionista riceve pratiche più complete, ordinate e comprensibili.
+
+---
+
+## Continuità del Fascicolo
+
+Il contatto con il professionista non conclude il lavoro di Mandari.
+
+Gli esiti della pratica possono essere registrati nel Fascicolo Amministrativo dell'utente.
+
+In questo modo il Fascicolo rimane aggiornato e costituisce il punto di partenza per tutte le attività future.
+
+Ogni pratica conclusa migliora la conoscenza che Mandari ha del contesto amministrativo del cittadino.
+
+---
+
+## Principi di Prodotto
+
+- Mandari prepara il cittadino prima dell'incontro con il professionista.
+- Mandari non sostituisce il professionista.
+- Mandari non impone nuovi strumenti di lavoro.
+- La documentazione deve essere chiara, completa e facilmente utilizzabile.
+- Ogni contatto con un professionista contribuisce ad arricchire il Fascicolo Amministrativo.
+- Le partnership devono creare valore sia per il cittadino sia per il professionista.
+
+---
+
+## Decisioni Congelate
+
+✓ Mandari non sostituisce il lavoro dei professionisti.
+
+✓ Il professionista riceve un cittadino già preparato e una documentazione organizzata.
+
+✓ Le partnership devono migliorare l'efficienza del lavoro esistente, senza imporre cambiamenti organizzativi o tecnologici.
+
+✓ Il Fascicolo Amministrativo continua ad evolversi anche dopo il contatto con il professionista.
+
+✓ L'obiettivo della partnership è generare benefici concreti sia per il cittadino sia per il professionista.
+
+
 
