@@ -1027,5 +1027,120 @@ Il cittadino continua ad utilizzare Mandari perché riconosce nell'applicazione 
 
 ✓ L'obiettivo finale è fare di Mandari il primo punto di riferimento per ogni decisione amministrativa della persona.
 
+---
+
+# 12. Fase 8 - Rinnovo dell'Abbonamento
+
+## Scopo
+
+Il rinnovo dell'abbonamento rappresenta la naturale conseguenza del valore costruito da Mandari durante l'anno.
+
+L'obiettivo non è convincere l'utente a rinnovare attraverso offerte commerciali o promozioni temporanee, ma permettergli di riconoscere il beneficio concreto ricevuto nel tempo.
+
+Il rinnovo è il risultato della fiducia maturata nel prodotto.
+
+---
+
+## Un rinnovo che nasce dall'utilità
+
+Durante l'anno Mandari ha accompagnato il cittadino nella gestione della propria vita amministrativa.
+
+Ha organizzato documenti.
+
+Ha ricordato scadenze.
+
+Ha individuato opportunità.
+
+Ha spiegato comunicazioni.
+
+Ha preparato incontri con professionisti.
+
+Ha aggiornato il Fascicolo Amministrativo.
+
+Il rinnovo rappresenta la scelta di continuare questo percorso.
+
+---
+
+## Il valore accumulato
+
+Al momento del rinnovo Mandari mostra all'utente il valore costruito insieme.
+
+Ad esempio:
+
+- documenti archiviati;
+- pratiche gestite;
+- scadenze monitorate;
+- opportunità individuate;
+- documenti spiegati;
+- nuovi profili amministrati;
+- tempo stimato risparmiato.
+
+L'obiettivo non è mostrare numeri, ma rendere evidente il percorso compiuto.
+
+Il cittadino comprende quanto Mandari abbia contribuito alla gestione della propria vita amministrativa.
+
+---
+
+## Continuità
+
+Rinnovare significa mantenere vivo il proprio Fascicolo Amministrativo.
+
+Ogni anno aggiunge nuove informazioni, nuove esperienze e una maggiore capacità di assistere il cittadino.
+
+Il valore di Mandari cresce insieme alla storia amministrativa della persona.
+
+Interrompere il servizio significa rinunciare ad un assistente che, nel tempo, ha imparato a conoscere il proprio contesto.
+
+---
+
+## Il Piano Family
+
+Il rinnovo costituisce anche il momento nel quale il cittadino può rivedere la composizione del proprio account.
+
+Può:
+
+- aggiungere nuovi Profili Aggiunti;
+- rimuovere profili non più necessari;
+- aggiornare il proprio Nucleo Amministrativo;
+- adattare Mandari ai cambiamenti della propria vita.
+
+L'abbonamento evolve insieme al cittadino.
+
+---
+
+## Un rapporto di fiducia
+
+Mandari non utilizza meccanismi che ostacolano la disattivazione del servizio.
+
+L'utente deve poter scegliere liberamente se continuare il proprio percorso.
+
+La volontà di rinnovare nasce esclusivamente dalla qualità del servizio ricevuto e dalla fiducia costruita nel tempo.
+
+La trasparenza rappresenta un principio fondamentale del prodotto.
+
+---
+
+## Principi di Prodotto
+
+- Il rinnovo è una conseguenza del valore generato.
+- Il Fascicolo Amministrativo aumenta il proprio valore anno dopo anno.
+- L'utente deve comprendere chiaramente i benefici ricevuti.
+- Il Piano Family evolve insieme alle esigenze del cittadino.
+- La libertà di scelta rafforza il rapporto di fiducia.
+
+---
+
+## Decisioni Congelate
+
+✓ Il rinnovo non viene promosso attraverso pressioni commerciali.
+
+✓ Il valore accumulato durante l'anno rappresenta la principale motivazione al rinnovo.
+
+✓ Il Fascicolo Amministrativo continua a crescere nel tempo.
+
+✓ Il Piano Family può essere aggiornato ad ogni rinnovo.
+
+✓ La trasparenza e la libertà di scelta costituiscono principi fondamentali del rapporto tra Mandari e il cittadino.
+
 
 
