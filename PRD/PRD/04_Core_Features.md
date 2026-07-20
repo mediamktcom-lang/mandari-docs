@@ -1,3 +1,12 @@
+PRD-004
+Core Features
+
+Versione.............1.0
+Stato................Frozen
+Ultima modifica......20/07/2026
+Progetto.............Mandari
+Documento............Ufficiale
+
 # PRD-004
 
 # Core Features
