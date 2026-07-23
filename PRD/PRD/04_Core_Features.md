@@ -1193,5 +1193,140 @@ Rappresenta esclusivamente la base informativa utilizzata da Mandari per assiste
 ✓ Ogni aggiornamento è tracciato.
 
 ✓ Il Fascicolo evolve insieme alla vita amministrativa del cittadino.
+# 8. Collaborazione tra i Motori
+
+## Missione
+
+L'efficacia di Mandari non deriva dall'azione di un singolo motore, ma dalla collaborazione continua tra tutti i componenti del sistema.
+
+Ogni motore contribuisce secondo le proprie responsabilità, condividendo le informazioni attraverso il Fascicolo Amministrativo.
+
+L'utente percepisce un unico assistente intelligente, mentre internamente Mandari coordina il lavoro di specialisti dedicati.
+
+---
+
+## Principio di collaborazione
+
+Ogni motore svolge esclusivamente il proprio compito.
+
+Quando un motore produce una nuova informazione rilevante, questa viene registrata nel Fascicolo Amministrativo e resa immediatamente disponibile agli altri motori.
+
+Ogni motore decide autonomamente se tale informazione rientra nelle proprie responsabilità.
+
+Nessun motore modifica il comportamento degli altri.
+
+La collaborazione avviene esclusivamente attraverso il Fascicolo Amministrativo.
+
+---
+
+## Flusso generale
+
+Il funzionamento standard di Mandari segue sempre lo stesso schema.
+
+1. Il cittadino inserisce una nuova informazione.
+
+2. Il Fascicolo Amministrativo viene aggiornato.
+
+3. I motori verificano se l'aggiornamento richiede il loro intervento.
+
+4. Ogni motore produce il proprio contributo.
+
+5. I nuovi risultati vengono registrati nel Fascicolo.
+
+6. Mandari presenta all'utente una risposta unificata.
+
+Ogni motore opera nel rispetto delle proprie responsabilità.
+
+---
+
+## Esempio di collaborazione
+
+Il cittadino fotografa una comunicazione ricevuta.
+
+CARTA:
+
+- acquisisce il documento;
+- ne comprende il contenuto;
+- lo classifica;
+- aggiorna il Fascicolo Amministrativo.
+
+Successivamente:
+
+SPETTA verifica se il documento genera nuove opportunità.
+
+DATA controlla se introduce nuove scadenze.
+
+AFFIDO valuta se suggerire il supporto di un professionista, di un servizio o di un'altra soluzione.
+
+Il cittadino riceve una risposta unica, anche se il risultato deriva dal lavoro congiunto di più motori.
+
+---
+
+## Indipendenza dei motori
+
+Ogni motore può evolvere senza modificare il comportamento degli altri.
+
+Nuove funzionalità possono essere introdotte mantenendo invariati:
+
+- il Fascicolo Amministrativo;
+- le responsabilità degli altri motori;
+- il principio della fonte unica di verità.
+
+Questa architettura rende Mandari facilmente estendibile.
+
+---
+
+## Collaborazione invisibile
+
+L'utente non deve conoscere il funzionamento interno del sistema.
+
+Non deve scegliere quale motore utilizzare.
+
+Non deve sapere quale motore ha prodotto una determinata informazione.
+
+Mandari si presenta sempre come un unico assistente digitale.
+
+La suddivisione in motori rappresenta una scelta architetturale interna e non modifica l'esperienza dell'utente.
+
+---
+
+## Benefici dell'architettura collaborativa
+
+La collaborazione tra i motori permette di:
+
+- eliminare duplicazioni di informazioni;
+- mantenere una visione coerente della situazione amministrativa;
+- ridurre gli errori;
+- migliorare la qualità dei suggerimenti;
+- semplificare l'evoluzione del sistema;
+- garantire la tracciabilità delle informazioni.
+
+---
+
+## Principi di Prodotto
+
+- Ogni motore mantiene una responsabilità esclusiva.
+- La collaborazione avviene esclusivamente attraverso il Fascicolo Amministrativo.
+- Nessun motore dipende direttamente da un altro motore.
+- L'utente interagisce con un unico assistente digitale.
+- Ogni nuova informazione può generare valore per l'intero sistema.
+
+---
+
+## Decisioni Congelate
+
+✓ I motori collaborano esclusivamente attraverso il Fascicolo Amministrativo.
+
+✓ Ogni motore mantiene la propria autonomia funzionale.
+
+✓ Nessun motore modifica direttamente il comportamento di un altro motore.
+
+✓ L'utente percepisce sempre Mandari come un unico assistente.
+
+✓ La collaborazione tra i motori costituisce uno dei principi fondanti dell'architettura di Mandari.
+
+✓ Il coordinamento operativo dei motori sarà definito nel PRD-005 dedicato all'Orchestratore AI.
+
+
 
 
