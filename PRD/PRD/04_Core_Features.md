@@ -1327,6 +1327,130 @@ La collaborazione tra i motori permette di:
 
 ✓ Il coordinamento operativo dei motori sarà definito nel PRD-005 dedicato all'Orchestratore AI.
 
+# 10. Decisioni Congelate
+
+## Obiettivo
+
+Il presente capitolo raccoglie tutte le decisioni progettuali approvate durante la stesura del PRD-004.
+
+Le decisioni qui riportate costituiscono il riferimento ufficiale per lo sviluppo delle Core Features di Mandari.
+
+Ogni modifica dovrà essere valutata attraverso una nuova revisione del documento e non potrà avvenire implicitamente durante lo sviluppo.
+
+---
+
+## Architettura generale
+
+✓ Mandari è composto da motori specializzati.
+
+✓ Ogni motore possiede una responsabilità esclusiva.
+
+✓ I motori collaborano tra loro senza sovrapporre le proprie responsabilità.
+
+✓ Il coordinamento dei motori sarà definito nel PRD-005 (AI Engine).
+
+---
+
+## Fascicolo Amministrativo
+
+✓ Il Fascicolo Amministrativo rappresenta la memoria ufficiale di Mandari.
+
+✓ Il Fascicolo costituisce l'unica fonte ufficiale delle informazioni utilizzate dal sistema.
+
+✓ Ogni motore legge e aggiorna il Fascicolo esclusivamente nell'ambito delle proprie responsabilità.
+
+✓ Non sono ammesse copie autonome delle informazioni principali.
+
+✓ Il Fascicolo evolve insieme alla situazione amministrativa del cittadino.
+
+---
+
+## SPETTA
+
+✓ SPETTA è il motore delle opportunità amministrative.
+
+✓ SPETTA analizza esclusivamente le informazioni presenti nel Fascicolo.
+
+✓ SPETTA non certifica diritti.
+
+✓ SPETTA non sostituisce CAF, Patronati o professionisti.
+
+✓ Ogni opportunità proposta deve essere spiegabile e verificabile.
+
+---
+
+## DATA
+
+✓ DATA è il motore della gestione del tempo amministrativo.
+
+✓ DATA organizza automaticamente le scadenze rilevanti.
+
+✓ DATA crea reminder basati sulle informazioni presenti nel Fascicolo.
+
+✓ DATA non sostituisce il cittadino nell'esecuzione degli adempimenti.
+
+---
+
+## CARTA
+
+✓ CARTA è il motore della comprensione documentale.
+
+✓ CARTA traduce documenti complessi in informazioni comprensibili.
+
+✓ CARTA aggiorna automaticamente il Fascicolo.
+
+✓ CARTA non sostituisce il parere di un professionista.
+
+---
+
+## AFFIDO
+
+✓ AFFIDO è il motore delle soluzioni.
+
+✓ AFFIDO può essere attivato automaticamente oppure direttamente dall'utente.
+
+✓ AFFIDO propone professionisti, servizi, partner o informazioni utili.
+
+✓ AFFIDO termina il proprio compito quando il cittadino dispone degli elementi necessari per scegliere come procedere.
+
+✓ Mandari non gestisce il rapporto tra cittadino e professionista.
+
+✓ Le partnership devono migliorare il lavoro dei professionisti senza modificarne il metodo operativo.
+
+---
+
+## Esperienza Utente
+
+✓ Il cittadino interagisce sempre con un unico assistente digitale.
+
+✓ Il funzionamento interno dei motori rimane trasparente.
+
+✓ Ogni suggerimento deve essere motivato e comprensibile.
+
+✓ Il cittadino mantiene sempre la libertà di scelta.
+
+---
+
+## Principi Fondamentali
+
+✓ Mandari prepara il cittadino ad affrontare il mondo reale.
+
+✓ Mandari non sostituisce i professionisti.
+
+✓ Mandari migliora la qualità delle informazioni disponibili per il cittadino.
+
+✓ Mandari migliora il lavoro dei professionisti senza imporre nuovi strumenti.
+
+✓ Ogni nuova funzionalità dovrà rispettare i Principi Architetturali definiti nel presente documento.
+
+---
+
+## Stato del Documento
+
+Con l'approvazione del presente capitolo, il PRD-004 è considerato completo e congelato nella versione 1.0.
+
+Eventuali modifiche future dovranno essere introdotte attraverso una nuova versione del documento, mantenendo la tracciabilità delle decisioni progettuali.
+
 
 
 
