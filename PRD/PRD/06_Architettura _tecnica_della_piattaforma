@@ -1,1 +1,375 @@
+# PRD-006
+# Architettura Tecnica di Mandari
 
+Versione: 1.0 (Frozen)
+
+Stato: Draft
+
+Dipendenze:
+- PRD-001 Visione del Prodotto
+- PRD-002 Modello del Cittadino e Fascicolo Amministrativo
+- PRD-003 Esperienza Utente
+- PRD-004 Motori Funzionali
+- PRD-005 Orchestratore Decisionale
+
+---
+
+## Obiettivo del documento
+
+Il presente documento descrive l'architettura tecnica di Mandari.
+
+Mandari nasce come un'applicazione personale destinata ad assistere il cittadino nella gestione della propria vita amministrativa.
+
+L'applicazione sarà disponibile sia come App per smartphone sia come WebApp accessibile tramite browser.
+
+Entrambe le modalità di accesso condividono lo stesso account, lo stesso Fascicolo Amministrativo e la stessa esperienza utente.
+
+L'obiettivo è consentire al cittadino di accedere al proprio assistente digitale in qualsiasi momento e da qualsiasi dispositivo, senza differenze funzionali tra App e WebApp.
+
+Questo documento definisce l'architettura logica che rende possibile tale esperienza.
+
+# 1. Visione Architetturale
+
+## Missione
+
+Mandari è un'applicazione personale progettata per accompagnare il cittadino nella gestione della propria vita amministrativa.
+
+L'utente può utilizzare Mandari attraverso l'App mobile oppure tramite la WebApp.
+
+Indipendentemente dal dispositivo utilizzato, Mandari rappresenta sempre lo stesso assistente digitale, con lo stesso Fascicolo Amministrativo, lo stesso Orchestratore e le stesse funzionalità.
+
+L'esperienza d'uso deve essere continua, coerente e indipendente dal canale di accesso.
+
+---
+
+## Obiettivo
+
+L'architettura tecnica ha lo scopo di garantire che ogni cittadino possa accedere al proprio assistente digitale in qualsiasi momento, da qualsiasi dispositivo e con la certezza di ritrovare sempre il proprio stato, la propria cronologia e il proprio Fascicolo.
+
+La separazione tra App e WebApp riguarda esclusivamente il canale di accesso.
+
+L'intelligenza del sistema risiede nei servizi centrali condivisi.
+
+---
+
+## Un solo Mandari
+
+App e WebApp non rappresentano due prodotti differenti.
+
+Sono due interfacce dello stesso sistema.
+
+Ogni informazione, documento, analisi o aggiornamento è immediatamente disponibile su entrambi i canali.
+
+Il cittadino può iniziare un'attività da smartphone e proseguirla successivamente dalla WebApp senza alcuna interruzione.
+
+---
+
+## Principio di Continuità
+
+Mandari deve accompagnare il cittadino e non il dispositivo.
+
+L'identità del cittadino, il Fascicolo Amministrativo, il Contesto Decisionale e la Memoria Operativa appartengono all'account dell'utente e non al dispositivo utilizzato.
+
+Qualunque dispositivo autorizzato rappresenta semplicemente un punto di accesso allo stesso assistente digitale.
+
+---
+
+## Decisioni Congelate
+
+✓ Mandari nasce come applicazione personale.
+
+✓ Mandari sarà disponibile come App e WebApp.
+
+✓ App e WebApp condividono lo stesso account e gli stessi dati.
+
+✓ L'esperienza utente deve essere continua e indipendente dal dispositivo.
+
+✓ Il Fascicolo Amministrativo appartiene all'utente e non al dispositivo.
+
+# 2. Architettura Logica del Sistema
+
+## Missione
+
+L'architettura logica di Mandari definisce i principali servizi che compongono il sistema e le rispettive responsabilità.
+
+Ogni servizio è progettato per svolgere una funzione specifica e collaborare con gli altri attraverso l'Orchestratore, mantenendo una chiara separazione delle responsabilità.
+
+L'obiettivo è costruire un sistema semplice da comprendere, facilmente evolvibile e indipendente dalle tecnologie utilizzate per l'implementazione.
+
+---
+
+## Obiettivo
+
+Definire i macro-servizi che costituiscono Mandari e il ruolo di ciascuno all'interno dell'architettura complessiva.
+
+Ogni evoluzione futura dovrà inserirsi all'interno di questa struttura senza alterarne i principi fondamentali.
+
+---
+
+## Visione Generale
+
+Mandari è composto da un insieme di servizi cooperanti.
+
+Ogni servizio possiede una responsabilità esclusiva.
+
+Nessun servizio contiene l'intera logica applicativa.
+
+L'intelligenza del sistema nasce dalla collaborazione tra i servizi coordinati dall'Orchestratore.
+
+---
+
+## Macro-servizi
+
+L'architettura di Mandari è composta dai seguenti macro-servizi.
+
+### Client
+
+Rappresenta i punti di accesso del cittadino.
+
+Comprende:
+
+- App mobile;
+- WebApp.
+
+I client raccolgono gli input dell'utente e presentano le risposte elaborate dal sistema.
+
+Non contengono logiche decisionali.
+
+---
+
+### Gateway Applicativo
+
+Costituisce il punto di ingresso di tutte le richieste.
+
+Si occupa di:
+
+- autenticazione;
+- autorizzazione;
+- validazione delle richieste;
+- instradamento verso i servizi interni.
+
+---
+
+### Orchestratore
+
+Rappresenta il centro decisionale del sistema.
+
+Riceve le richieste dal Gateway, costruisce il contesto decisionale, individua bisogni e obiettivi, coordina i motori e compone la risposta finale.
+
+---
+
+### Motori Specialistici
+
+Implementano le competenze funzionali di Mandari.
+
+Attualmente comprendono:
+
+- SPETTA;
+- DATA;
+- CARTA;
+- AFFIDO.
+
+Ogni motore opera esclusivamente nel proprio dominio di competenza.
+
+---
+
+### Fascicolo Amministrativo
+
+Rappresenta la conoscenza permanente del cittadino.
+
+Costituisce la principale fonte informativa utilizzata dall'Orchestratore.
+
+---
+
+### Servizi Condivisi
+
+Comprendono tutte le funzionalità comuni necessarie al funzionamento del sistema.
+
+Ad esempio:
+
+- autenticazione;
+- notifiche;
+- gestione documentale;
+- OCR;
+- logging;
+- monitoraggio;
+- configurazione.
+
+Questi servizi non partecipano direttamente al processo decisionale.
+
+---
+
+## Relazioni tra i servizi
+
+L'architettura segue una struttura gerarchica.
+
+Il cittadino comunica esclusivamente con i Client.
+
+I Client comunicano con il Gateway.
+
+Il Gateway inoltra le richieste all'Orchestratore.
+
+L'Orchestratore coordina i Motori Specialistici.
+
+I Motori consultano il Fascicolo e i Servizi Condivisi quando necessario.
+
+Le risposte seguono il percorso inverso fino al cittadino.
+
+---
+
+## Principi Architetturali
+
+L'architettura logica di Mandari rispetta i seguenti principi.
+
+- responsabilità unica;
+- separazione dei ruoli;
+- coordinamento centralizzato;
+- indipendenza dei servizi;
+- modularità;
+- evoluzione incrementale.
+
+---
+
+## Decisioni Congelate
+
+✓ Mandari è composto da servizi indipendenti.
+
+✓ Il Gateway rappresenta l'unico punto di ingresso al sistema.
+
+✓ L'Orchestratore costituisce il centro decisionale.
+
+✓ I Motori implementano esclusivamente competenze specialistiche.
+
+✓ Il Fascicolo Amministrativo rappresenta la fonte permanente della conoscenza.
+
+✓ I Servizi Condivisi forniscono funzionalità trasversali senza partecipare al processo decisionale.
+
+# 3. Comunicazione tra i Servizi
+
+## Missione
+
+L'architettura di Mandari si basa sulla collaborazione tra servizi indipendenti.
+
+Ogni servizio svolge una responsabilità specifica e comunica con gli altri esclusivamente attraverso interfacce definite.
+
+La comunicazione costituisce il meccanismo che consente ai servizi di cooperare senza creare dipendenze dirette tra le rispettive implementazioni.
+
+---
+
+## Obiettivo
+
+Garantire una comunicazione semplice, controllata, osservabile ed evolutiva tra tutti i servizi dell'applicazione.
+
+Ogni nuovo servizio dovrà poter essere integrato senza modificare il comportamento degli altri componenti del sistema.
+
+---
+
+## Principio di Comunicazione
+
+Nessun servizio comunica direttamente con il cittadino.
+
+L'unico punto di ingresso dell'applicazione è rappresentato dai Client (App e WebApp), attraverso il Gateway Applicativo.
+
+All'interno del sistema, ogni comunicazione segue un percorso controllato e tracciabile.
+
+---
+
+## Comunicazione Sincrona
+
+La comunicazione sincrona viene utilizzata quando il servizio chiamante necessita di una risposta immediata per poter proseguire l'elaborazione.
+
+È tipicamente impiegata per:
+
+- autenticazione;
+- recupero di informazioni;
+- interrogazioni del Fascicolo Amministrativo;
+- richieste dell'Orchestratore ai Motori;
+- restituzione della risposta al cittadino.
+
+La comunicazione sincrona privilegia velocità e semplicità.
+
+---
+
+## Comunicazione Asincrona
+
+Quando una richiesta non richiede una risposta immediata, Mandari privilegia un modello asincrono.
+
+Esempi:
+
+- invio di notifiche;
+- aggiornamento di indici;
+- elaborazioni documentali lunghe;
+- analisi massive;
+- sincronizzazioni;
+- attività pianificate.
+
+Il cittadino non deve attendere il completamento di tali operazioni.
+
+---
+
+## Eventi
+
+Ogni cambiamento significativo all'interno del sistema genera un evento.
+
+Un evento rappresenta un fatto già avvenuto.
+
+Ad esempio:
+
+- Documento caricato.
+- Fascicolo aggiornato.
+- Nuova scadenza individuata.
+- Analisi completata.
+- Promemoria creato.
+- Profilo aggiornato.
+
+Gli eventi possono essere utilizzati da altri servizi per avviare nuove elaborazioni senza creare dipendenze dirette.
+
+---
+
+## Contratti di Comunicazione
+
+Ogni servizio espone esclusivamente interfacce pubbliche documentate.
+
+Le implementazioni interne rimangono private.
+
+Questo principio consente di evolvere i singoli servizi senza modificare il comportamento degli altri componenti.
+
+---
+
+## Osservabilità
+
+Ogni comunicazione deve poter essere:
+
+- identificata;
+- tracciata;
+- monitorata;
+- registrata.
+
+L'obiettivo è rendere ogni flusso ricostruibile in caso di errore, manutenzione o attività di audit.
+
+---
+
+## Principi Architetturali
+
+La comunicazione tra i servizi deve rispettare i seguenti principi.
+
+- basso accoppiamento;
+- alta coesione;
+- interfacce stabili;
+- comunicazioni osservabili;
+- evoluzione indipendente dei servizi;
+- nessuna conoscenza delle implementazioni interne.
+
+---
+
+## Decisioni Congelate
+
+✓ Ogni servizio comunica esclusivamente tramite interfacce definite.
+
+✓ La comunicazione può essere sincrona o asincrona in funzione delle esigenze operative.
+
+✓ Gli eventi rappresentano il principale meccanismo di collaborazione tra servizi indipendenti.
+
+✓ Ogni comunicazione deve essere tracciabile.
+
+✓ Nessun servizio dipende dall'implementazione interna di un altro servizio.
