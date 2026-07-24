@@ -2,7 +2,7 @@
 id: PRD-003
 title: User Journey
 version: 0.1
-status: DRAFT
+status: FROZEN
 owner: Founder
 reviewed_by: CTO
 approved_date:
