@@ -4,7 +4,7 @@
 
 Versione: 1.0
 
-Stato: DRAFT
+Stato: FROZEN
 
 Ultimo aggiornamento: Luglio 2026
 
