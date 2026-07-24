@@ -373,3 +373,7 @@ La comunicazione tra i servizi deve rispettare i seguenti principi.
 ✓ Ogni comunicazione deve essere tracciabile.
 
 ✓ Nessun servizio dipende dall'implementazione interna di un altro servizio.
+
+
+
+
