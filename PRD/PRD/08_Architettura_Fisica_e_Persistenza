@@ -1,0 +1,60 @@
+# PRD-008
+# Architettura Fisica e Persistenza
+
+Versione: 1.0 (Frozen)
+
+Stato: IN LAVORAZIONE
+
+Progetto: Mandari
+
+Documenti correlati:
+
+PRD-001 — Visione del Prodotto
+
+PRD-002 — Modello del Cittadino e Fascicolo
+
+PRD-003 — Esperienza Utente
+
+PRD-004 — Motori Funzionali
+
+PRD-005 — Orchestratore Decisionale
+
+PRD-006 — Architettura Tecnica
+
+PRD-007 — Modello Dati e Fascicolo Amministrativo
+
+---
+
+# Obiettivo del Documento
+
+Il presente documento definisce l'architettura fisica di Mandari.
+
+Dopo aver definito nei PRD precedenti il modello concettuale del sistema, il Fascicolo Amministrativo, gli Atti, la conoscenza e il comportamento dell'Orchestratore, il PRD-008 descrive come tali elementi verranno concretamente persistiti, organizzati, sincronizzati e resi disponibili ai diversi componenti dell'applicazione.
+
+Il documento non introduce nuovi concetti funzionali, ma traduce i principi già congelati nei PRD precedenti in una struttura tecnica implementabile.
+
+Le decisioni contenute nel presente documento costituiranno il riferimento architetturale per tutti i successivi sviluppi relativi a database, storage, motori di ricerca, sincronizzazione e infrastruttura.
+
+---
+
+# Struttura del Documento
+
+1. Visione dell'Architettura Fisica
+
+2. Principi di Persistenza dei Dati
+
+3. Storage degli Atti e degli Allegati
+
+4. Database e Modello di Persistenza
+
+5. Motore di Indicizzazione e Ricerca
+
+6. Sincronizzazione tra App, WebApp e Backend
+
+7. Gestione dello Stato e della Cache
+
+8. Scalabilità e Prestazioni
+
+9. Principi Architetturali dell'Infrastruttura
+
+10. Decisioni Congelate
