@@ -1,1 +1,28 @@
+# PRD-007
+# Modello Dati e Fascicolo Amministrativo
 
+Versione: 1.0 (Frozen)
+
+Stato: Draft
+
+Dipendenze:
+- PRD-001 Visione del Prodotto
+- PRD-002 Modello del Cittadino e Fascicolo Amministrativo
+- PRD-003 Esperienza Utente
+- PRD-004 Motori Funzionali
+- PRD-005 Orchestratore Decisionale
+- PRD-006 Architettura Tecnica
+
+---
+
+## Obiettivo del documento
+
+Il presente documento definisce il modello logico delle informazioni gestite da Mandari.
+
+Dopo aver descritto il comportamento dell'applicazione, dei motori, dell'Orchestratore e dell'architettura tecnica, questo PRD introduce la struttura della conoscenza del sistema.
+
+L'obiettivo è descrivere come vengono rappresentate le informazioni del cittadino, come sono organizzate all'interno del Fascicolo Amministrativo e quali principi guidano la loro evoluzione.
+
+Il documento definisce esclusivamente il modello logico dei dati.
+
+Non vengono affrontate in questa sede le tecnologie di persistenza, i database o le modalità fisiche di archiviazione, che saranno oggetto dei documenti successivi.
