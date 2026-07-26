@@ -166,6 +166,8 @@ Non è un motore di ricerca bonus.
 
 Mandari è il sistema operativo della vita amministrativa personale e familiare.
 
+Mandari è un servizio digitale personale accessibile attraverso molteplici canali, tra cui applicazione mobile, WebApp e piattaforme di comunicazione di terze parti.
+
 ---
 
 # 11. L'obiettivo finale
