@@ -1,1 +1,195 @@
+# ROADMAP
+
+Versione: 1.0
+
+Stato: Attivo
+
+---
+
+# 1. Scheme
+
+Il presente capitolo rappresenta il percorso ufficiale di sviluppo del progetto Mandari.
+
+Ogni fase produce uno o più documenti che devono essere approvati (Frozen) prima di poter accedere alla fase successiva.
+
+Nessuna fase può essere saltata.
+
+Lo stato di avanzamento dell'intero progetto viene aggiornato esclusivamente al completamento di una fase prevista dal presente documento.
+
+---
+
+## Percorso Ufficiale
+
+IDEA
+
+↓
+
+PRD
+(Product Requirements Document)
+
+↓
+
+ARCH
+(Technical Architecture)
+
+↓
+
+SPRINT
+(Pianificazione dello sviluppo)
+
+↓
+
+SOURCE
+(Codice sorgente)
+
+↓
+
+TEST
+(Verifica tecnica e funzionale)
+
+↓
+
+BETA
+(Test con utenti reali)
+
+↓
+
+PRODUZIONE
+(Rilascio ufficiale)
+
+---
+
+## Regole del Percorso
+
+- Ogni fase inizia esclusivamente dopo la chiusura della fase precedente.
+
+- Ogni documento approvato viene congelato (Frozen).
+
+- Eventuali modifiche ai documenti congelati devono essere motivate e approvate.
+
+- Lo stato di avanzamento viene aggiornato solamente nel presente documento.
+
+- Il presente documento costituisce l'unico riferimento ufficiale dello stato del progetto.
+
+---
+
+# 2. Stato di Avanzamento
+
+## Fase 0 — Ideazione
+
+Stato
+
+✓ Completata
+
+Output
+
+- Visione iniziale del progetto Mandari.
+
+---
+
+## Fase 1 — PRD
+
+Stato
+
+✓ Completata
+
+Output
+
+- PRD-000
+- PRD-001
+- PRD-002
+- PRD-003
+- PRD-004
+- PRD-005
+- PRD-006
+- PRD-007
+- PRD-008
+- PRD-009
+- PRD-010
+- PRD-011
+- PRD-012
+- PRD-013
+- PRD-014
+- PRD-015
+
+---
+
+## Fase 2 — ARCH
+
+Stato
+
+⏳ Non iniziata
+
+Output previsti
+
+- ARCH-001
+- ARCH-002
+- ARCH-003
+- ARCH-004
+- ARCH-005
+- ARCH-006
+
+---
+
+## Fase 3 — Sprint
+
+Stato
+
+Non iniziata
+
+---
+
+## Fase 4 — Source
+
+Stato
+
+Non iniziata
+
+---
+
+## Fase 5 — Test
+
+Stato
+
+Non iniziata
+
+---
+
+## Fase 6 — Beta
+
+Stato
+
+Non iniziata
+
+---
+
+## Fase 7 — Produzione
+
+Stato
+
+Non iniziata
+
+---
+
+# 3. Stato Corrente
+
+Fase attiva
+
+ARCH
+
+Documento corrente
+
+ARCH-001
+
+Stato
+
+In preparazione
+
+---
+
+# 4. Registro delle Revisioni
+
+Versione | Data | Descrizione
+---------|------|------------
+1.0 | Prima emissione | Creazione della Roadmap ufficiale del progetto.
 
