@@ -135,7 +135,18 @@ Output previsti
 
 Stato
 
-Non iniziata
+SPR-001 — COMPLETATO
+
+✔ Configurazione workstation
+✔ Git
+✔ GitHub
+✔ Node.js
+✔ Python
+✔ VS Code
+✔ Creazione repository software
+✔ Bootstrap progetto Next.js
+✔ Primo commit
+✔ Primo push
 
 ---
 
