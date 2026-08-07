@@ -73,7 +73,7 @@ def _analisi_con_gemini(profilo: Profilo, chiave: str) -> dict:
     """Chiede a Gemini un elenco di possibili opportunità, in formato JSON."""
     from google import genai  # importato qui così il demo funziona senza il pacchetto
 
-    modello = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    modello = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
     client = genai.Client(api_key=chiave)
 
     prompt = _costruisci_prompt(profilo)
