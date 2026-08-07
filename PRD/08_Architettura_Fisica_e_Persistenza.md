@@ -1,9 +1,9 @@
 # PRD-008
 # Architettura Fisica e Persistenza
 
-Versione: 1.0 (Frozen)
+Versione: 1.0
 
-Stato: IN LAVORAZIONE
+Stato: FROZEN
 
 Progetto: Mandari
 

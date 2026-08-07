@@ -122,7 +122,9 @@ I quattro motori condividono un'unica base informativa: il Fascicolo Amministrat
 
 Il Fascicolo rappresenta la memoria amministrativa del cittadino all'interno di Mandari ed è l'unica fonte ufficiale delle informazioni utilizzate dal sistema.
 
-Ogni motore può consultare il Fascicolo e aggiornarlo esclusivamente nell'ambito delle proprie responsabilità.
+Ogni motore può consultare il Fascicolo e contribuire ad aggiornarlo esclusivamente nell'ambito delle proprie responsabilità.
+
+L'aggiornamento non avviene mai tramite accesso diretto del motore ai dati persistenti: il motore produce risultati che vengono persistiti nel Fascicolo esclusivamente dal Backend, unico componente autorizzato ad accedere a Database e Storage (vedi PRD-010 e PRD-011).
 
 Nessun motore mantiene copie autonome delle informazioni principali.
 
@@ -178,6 +180,12 @@ La progettazione dei motori di Mandari si basa sui seguenti principi:
 
 ---
 
+## Nota di allineamento architetturale
+
+Il presente documento descrive il comportamento **funzionale** dei motori. Le espressioni "il motore aggiorna il Fascicolo" vanno intese in senso logico: il motore produce risultati e conoscenza che **vengono persistiti nel Fascicolo esclusivamente dal Backend**. Nessun motore accede direttamente a Database o Storage, e nessun motore comunica direttamente con un altro motore. Il coordinamento e la persistenza sono regolati da PRD-005 (Orchestratore), PRD-010 (API e Comunicazioni) e PRD-011 (Intelligenza Artificiale), a cui il presente PRD è subordinato per gli aspetti di accesso ai dati.
+
+---
+
 ## Decisioni Congelate
 
 ✓ Mandari è composto da motori specializzati.
@@ -220,7 +228,7 @@ Mandari è composto da cinque elementi fondamentali.
 
 Il Fascicolo Amministrativo rappresenta il centro del sistema.
 
-I quattro motori leggono e aggiornano continuamente il Fascicolo secondo le rispettive responsabilità.
+I quattro motori consultano il Fascicolo e ne alimentano l'aggiornamento secondo le rispettive responsabilità. La scrittura effettiva sui dati persistenti resta competenza esclusiva del Backend (vedi PRD-010 e PRD-011).
 
 L'utente interagisce con Mandari come se fosse un unico assistente digitale.
 

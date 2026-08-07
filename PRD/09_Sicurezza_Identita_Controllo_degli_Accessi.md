@@ -5,7 +5,7 @@
 
 Versione: 1.0
 
-Stato: Review
+Stato: FROZEN
 
 ---
 

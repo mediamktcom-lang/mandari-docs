@@ -642,9 +642,9 @@ Il Fascicolo rappresenta la conoscenza permanente del cittadino.
 
 La Memoria Operativa rappresenta esclusivamente lo stato temporaneo del lavoro in corso.
 
-Quando durante una conversazione emerge una nuova informazione stabile, saranno i motori competenti a decidere se aggiornare il Fascicolo.
+Quando durante una conversazione emerge una nuova informazione stabile, i motori competenti ne determinano il contenuto, ma la scrittura sul Fascicolo viene effettuata esclusivamente dal Backend, unico componente autorizzato ad accedere ai dati persistenti (vedi PRD-010 e PRD-011).
 
-L'Orchestratore non aggiorna direttamente il Fascicolo.
+Né l'Orchestratore né i motori aggiornano direttamente il Fascicolo.
 
 ---
 

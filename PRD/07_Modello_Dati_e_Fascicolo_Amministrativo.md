@@ -1,9 +1,9 @@
 # PRD-007
 # Modello Dati e Fascicolo Amministrativo
 
-Versione: 1.0 (Frozen)
+Versione: 1.0
 
-Stato: Draft
+Stato: FROZEN
 
 Dipendenze:
 - PRD-001 Visione del Prodotto

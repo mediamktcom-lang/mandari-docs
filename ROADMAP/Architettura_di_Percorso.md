@@ -118,9 +118,9 @@ Output
 
 Stato
 
-⏳ Non iniziata
+🔄 In corso
 
-Output previsti
+Output prodotti (Stato: Review — da congelare)
 
 - ARCH-001
 - ARCH-002
@@ -135,7 +135,13 @@ Output previsti
 
 Stato
 
-SPR-001 — COMPLETATO
+🔄 Avvio — in attesa del congelamento dei documenti ARCH
+
+Sprint redatti
+
+- SPR-001 — Setup Ambiente di Sviluppo (Stato: Review)
+
+Attività di setup ambiente già svolte (vedi WORKSTATION.md)
 
 ✔ Configurazione workstation
 ✔ Git
@@ -143,10 +149,8 @@ SPR-001 — COMPLETATO
 ✔ Node.js
 ✔ Python
 ✔ VS Code
-✔ Creazione repository software
-✔ Bootstrap progetto Next.js
-✔ Primo commit
-✔ Primo push
+
+Nota: il codice sorgente dell'applicazione è mantenuto in un repository software dedicato, distinto da `mandari-docs` (questo repository contiene esclusivamente la documentazione). Il bootstrap del progetto software (Next.js / FastAPI) e i relativi commit sono tracciati in quel repository.
 
 ---
 
@@ -186,15 +190,19 @@ Non iniziata
 
 Fase attiva
 
-ARCH
+ARCH (Fase 2)
 
-Documento corrente
+Documenti correnti
 
-ARCH-001
+ARCH-001 … ARCH-006 (redatti, Stato: Review)
 
 Stato
 
-In preparazione
+Documenti ARCH in revisione.
+
+Prossimo passo
+
+Congelamento dei documenti ARCH, quindi avvio formale della Fase 3 (Sprint di sviluppo).
 
 ---
 

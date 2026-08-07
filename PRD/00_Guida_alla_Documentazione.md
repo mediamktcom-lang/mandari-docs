@@ -5,7 +5,7 @@
 
 Versione: 1.0
 
-Stato: Frozen
+Stato: FROZEN
 
 ---
 
@@ -82,7 +82,7 @@ Eventuali modifiche future dovranno essere documentate attraverso una nuova revi
 La documentazione è organizzata nella cartella:
 
 ```
-docs/prd/
+PRD/
 ```
 
 Ogni documento utilizza la seguente nomenclatura:
@@ -103,33 +103,26 @@ Non rappresentano priorità di sviluppo.
 
 # Roadmap della documentazione
 
-## Documenti completati
+## Documenti completati (FROZEN)
 
+- PRD-000 — Guida alla Documentazione
 - PRD-001 — Visione del Prodotto
 - PRD-002 — Modello del Cittadino e del Fascicolo
 - PRD-003 — Esperienza Utente
 - PRD-004 — Motori Funzionali
-- PRD-005 — Orchestratore
-- PRD-006 — Architettura Software
+- PRD-005 — Orchestratore / AI Engine
+- PRD-006 — Architettura Tecnica della Piattaforma
 - PRD-007 — Modello dei Dati e del Fascicolo
 - PRD-008 — Architettura Fisica e Persistenza
-
----
-
-## Documenti in corso
-
 - PRD-009 — Sicurezza, Identità e Controllo degli Accessi
-
----
-
-## Documenti pianificati
-
 - PRD-010 — API e Comunicazione tra i Servizi
 - PRD-011 — Intelligenza Artificiale e Integrazione dei Modelli
 - PRD-012 — Deployment, DevOps e Infrastruttura Operativa
 - PRD-013 — Monitoraggio, Logging e Manutenzione
 - PRD-014 — Linee Guida di Sviluppo
 - PRD-015 — Revisione Finale dell'Architettura
+
+La fase PRD è conclusa: tutti i documenti sono in stato FROZEN.
 
 ---
 

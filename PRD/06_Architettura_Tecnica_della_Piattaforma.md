@@ -1,9 +1,9 @@
 # PRD-006
 # Architettura Tecnica di Mandari
 
-Versione: 1.0 (Frozen)
+Versione: 1.0
 
-Stato: Draft
+Stato: FROZEN
 
 Dipendenze:
 - PRD-001 Visione del Prodotto
