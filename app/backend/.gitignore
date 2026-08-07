@@ -1,0 +1,7 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Segreti: la chiave AI non deve MAI finire su GitHub
+.env
