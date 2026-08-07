@@ -3,13 +3,14 @@
 import { useState } from "react";
 import {
   analizza,
-  spiegaDocumento,
+  chiediAssistente,
   type Analisi,
+  type Opportunita,
   type Profilo,
   type SpiegazioneDoc,
 } from "./lib/api";
 
-type Vista = "home" | "spetta" | "carta";
+type Vista = "onboarding" | "assistente";
 
 const PROFILO_INIZIALE: Profilo = {
   regione: "",
@@ -36,7 +37,8 @@ function coloreLivello(livello: string): string {
 /* ================================ App ================================ */
 
 export default function App() {
-  const [vista, setVista] = useState<Vista>("home");
+  const [vista, setVista] = useState<Vista>("onboarding");
+  const [profilo, setProfilo] = useState<Profilo | null>(null);
 
   return (
     <main className="min-h-screen bg-white text-slate-900">
@@ -46,19 +48,17 @@ export default function App() {
           <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-brand">
             La burocrazia, dalla tua parte
           </p>
-          {vista !== "home" && (
-            <button
-              onClick={() => setVista("home")}
-              className="mt-4 text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              ← Tutti i motori
-            </button>
-          )}
         </header>
 
-        {vista === "home" && <Home onScegli={setVista} />}
-        {vista === "spetta" && <Spetta />}
-        {vista === "carta" && <Carta />}
+        {vista === "onboarding" && (
+          <Onboarding
+            onFatto={(p) => {
+              setProfilo(p);
+              setVista("assistente");
+            }}
+          />
+        )}
+        {vista === "assistente" && <Assistente profilo={profilo} />}
       </div>
     </main>
   );
@@ -75,84 +75,9 @@ function Logo() {
   );
 }
 
-/* -------------------------------- Home ------------------------------- */
+/* ----------------------------- Onboarding ---------------------------- */
 
-function Home({ onScegli }: { onScegli: (v: Vista) => void }) {
-  return (
-    <div className="space-y-4">
-      <p className="text-center text-slate-500">Scegli cosa ti serve oggi.</p>
-
-      <MotoreCard
-        nome="SPETTA"
-        claim="Scopri cosa ti spetta"
-        desc="Diritti, bonus e agevolazioni che potrebbero riguardarti."
-        cta="Inizia"
-        onClick={() => onScegli("spetta")}
-      />
-      <MotoreCard
-        nome="CARTA"
-        claim="Spiega un documento"
-        desc="Carichi una foto o un PDF di una lettera e te lo spiego in parole semplici."
-        cta="Carica un documento"
-        onClick={() => onScegli("carta")}
-      />
-
-      <div className="pt-3 text-center">
-        <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
-          Presto anche
-        </p>
-        <div className="mt-2 flex justify-center gap-2">
-          <MotorePill nome="DATA" />
-          <MotorePill nome="AFFIDO" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MotoreCard({
-  nome,
-  claim,
-  desc,
-  cta,
-  onClick,
-}: {
-  nome: string;
-  claim: string;
-  desc: string;
-  cta: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="block w-full rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:border-[#f2560a] hover:shadow-md"
-    >
-      <div className="flex items-center gap-3">
-        <span className="chip-brand rounded-full px-3 py-1 text-sm font-bold">
-          {nome}
-        </span>
-        <span className="font-semibold text-slate-900">{claim}</span>
-      </div>
-      <p className="mt-2 text-slate-600">{desc}</p>
-      <span className="btn-brand mt-4 inline-block rounded-xl px-4 py-2 text-sm font-semibold">
-        {cta}
-      </span>
-    </button>
-  );
-}
-
-function MotorePill({ nome }: { nome: string }) {
-  return (
-    <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-400">
-      {nome} · presto
-    </span>
-  );
-}
-
-/* ------------------------------- SPETTA ------------------------------ */
-
-function Spetta() {
+function Onboarding({ onFatto }: { onFatto: (p: Profilo) => void }) {
   const [profilo, setProfilo] = useState<Profilo>(PROFILO_INIZIALE);
   const [analisi, setAnalisi] = useState<Analisi | null>(null);
   const [caricamento, setCaricamento] = useState(false);
@@ -179,22 +104,50 @@ function Spetta() {
 
   if (analisi) {
     return (
-      <RisultatoSpetta
-        analisi={analisi}
-        onRicomincia={() => {
-          setAnalisi(null);
-          setErrore(null);
-        }}
-      />
+      <section className="space-y-4">
+        {analisi.demo && <BannerDemo />}
+        <h2 className="text-xl font-bold text-slate-900">
+          Ecco cosa potresti approfondire
+        </h2>
+        <div className="space-y-3">
+          {analisi.opportunita.map((o, i) => (
+            <CardOpportunita key={i} o={o} />
+          ))}
+        </div>
+        <Avviso testo={analisi.avviso} />
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <p className="font-semibold text-slate-900">
+            Questo è solo l&apos;inizio.
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            Con Mandari puoi chiedere qualsiasi cosa o caricare i tuoi documenti:
+            ci pensa lui a capire e aiutarti.
+          </p>
+          <button
+            onClick={() => onFatto(profilo)}
+            className="btn-brand mt-4 w-full rounded-xl px-4 py-3 font-semibold transition"
+          >
+            Continua con Mandari →
+          </button>
+        </div>
+      </section>
     );
   }
 
   return (
     <div>
-      <IntestazioneMotore
-        nome="SPETTA"
-        testo="Rispondi a poche domande sulla tua situazione."
-      />
+      <div className="mb-6 text-center">
+        <p className="text-lg font-medium text-slate-500">Scopri cosa ti</p>
+        <h2 className="mt-1 text-6xl font-black tracking-tight text-brand">
+          SPETTA
+        </h2>
+        <p className="mx-auto mt-4 max-w-md text-slate-600">
+          Rispondi a poche domande e scopri i diritti e le agevolazioni che
+          potrebbero riguardarti.
+        </p>
+      </div>
+
       <form
         onSubmit={invia}
         className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -328,16 +281,6 @@ function Spetta() {
           </select>
         </Campo>
 
-        <Campo etichetta="Qualcos'altro che vuoi aggiungere? (facoltativo)">
-          <textarea
-            value={profilo.note}
-            onChange={(e) => aggiorna("note", e.target.value)}
-            rows={3}
-            className="input"
-            placeholder="Es. sto cercando casa, ho una malattia cronica…"
-          />
-        </Campo>
-
         <button
           type="submit"
           disabled={caricamento}
@@ -356,230 +299,241 @@ function Spetta() {
   );
 }
 
-function RisultatoSpetta({
-  analisi,
-  onRicomincia,
-}: {
-  analisi: Analisi;
-  onRicomincia: () => void;
-}) {
-  return (
-    <section className="space-y-4">
-      {analisi.demo && <BannerDemo />}
+/* ---------------------------- Assistente ----------------------------- */
 
-      <h2 className="text-xl font-bold text-slate-900">
-        Ecco cosa potresti approfondire
-      </h2>
+type Messaggio = {
+  ruolo: "utente" | "mandari";
+  testo: string;
+  opportunita?: Opportunita[];
+  documento?: SpiegazioneDoc | null;
+  avviso?: string;
+};
 
-      <div className="space-y-3">
-        {analisi.opportunita.map((o, i) => (
-          <article
-            key={i}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="mb-1 flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-slate-900">{o.titolo}</h3>
-              <Badge livello={o.confidenza} />
-            </div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand">
-              {o.categoria}
-            </p>
-            <p className="mt-2 text-slate-700">{o.perche}</p>
-            <p className="mt-1 text-sm text-slate-500">
-              <span className="font-medium">Da verificare:</span>{" "}
-              {o.cosa_verificare}
-            </p>
-
-            {o.documenti && o.documenti.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs font-medium text-slate-500">
-                  Documenti utili
-                </p>
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  {o.documenti.map((d, j) => (
-                    <span
-                      key={j}
-                      className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600"
-                    >
-                      {d}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {o.a_chi_rivolgersi && (
-              <p className="mt-3 text-sm text-slate-600">
-                <span className="font-medium">A chi rivolgerti:</span>{" "}
-                {o.a_chi_rivolgersi}
-              </p>
-            )}
-          </article>
-        ))}
-      </div>
-
-      <Avviso testo={analisi.avviso} />
-      <BottoneSecondario onClick={onRicomincia}>
-        Rifai il questionario
-      </BottoneSecondario>
-    </section>
-  );
-}
-
-/* ------------------------------- CARTA ------------------------------- */
-
-function Carta() {
+function Assistente({ profilo }: { profilo: Profilo | null }) {
+  const [messaggi, setMessaggi] = useState<Messaggio[]>([
+    {
+      ruolo: "mandari",
+      testo:
+        "Ciao! Ora sono a tua disposizione. Scrivimi una domanda (es. «cosa mi spetta se perdo il lavoro?») oppure carica un documento e te lo spiego.",
+    },
+  ]);
+  const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [doc, setDoc] = useState<SpiegazioneDoc | null>(null);
   const [caricamento, setCaricamento] = useState(false);
-  const [errore, setErrore] = useState<string | null>(null);
 
   async function invia(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if ((!input.trim() && !file) || caricamento) return;
+
+    const testoUtente = input.trim()
+      ? input.trim()
+      : file
+        ? `📎 ${file.name}`
+        : "";
+    setMessaggi((m) => [...m, { ruolo: "utente", testo: testoUtente }]);
+
+    const msg = input;
+    const doc = file;
+    setInput("");
+    setFile(null);
     setCaricamento(true);
-    setErrore(null);
+
     try {
-      setDoc(await spiegaDocumento(file));
+      const r = await chiediAssistente(msg, profilo, doc);
+      setMessaggi((m) => [
+        ...m,
+        {
+          ruolo: "mandari",
+          testo: r.messaggio,
+          opportunita: r.opportunita ?? [],
+          documento: r.documento ?? null,
+          avviso: r.avviso,
+        },
+      ]);
     } catch {
-      setErrore(
-        "Non riesco a contattare il motore. Assicurati che il backend sia avviato."
-      );
+      setMessaggi((m) => [
+        ...m,
+        {
+          ruolo: "mandari",
+          testo: "Ops, non riesco a rispondere in questo momento. Riprova tra poco.",
+        },
+      ]);
     } finally {
       setCaricamento(false);
     }
   }
 
-  if (doc) {
-    return (
-      <RisultatoCarta
-        doc={doc}
-        onRicomincia={() => {
-          setDoc(null);
-          setFile(null);
-          setErrore(null);
-        }}
-      />
-    );
-  }
-
   return (
-    <div>
-      <IntestazioneMotore
-        nome="CARTA"
-        testo="Carica una foto o un PDF di un documento e te lo spiego."
-      />
-      <form
-        onSubmit={invia}
-        className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-      >
-        <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-8 text-center transition hover:border-[#f2560a]">
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            className="hidden"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-          {file ? (
-            <span className="font-medium text-slate-800">{file.name}</span>
-          ) : (
-            <span className="text-slate-500">
-              Tocca per scegliere un&apos;immagine o un PDF
-            </span>
-          )}
-        </label>
+    <div className="space-y-4">
+      {messaggi.map((m, i) => (
+        <Bolla key={i} m={m} />
+      ))}
+      {caricamento && (
+        <p className="text-sm text-slate-400">Mandari sta pensando…</p>
+      )}
 
-        <button
-          type="submit"
-          disabled={!file || caricamento}
-          className="btn-brand w-full rounded-xl px-4 py-3 font-semibold transition disabled:opacity-60"
-        >
-          {caricamento ? "Lettura in corso…" : "Spiega il documento"}
-        </button>
-
-        {errore && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {errore}
-          </p>
+      <form onSubmit={invia} className="sticky bottom-4 mt-2 space-y-2">
+        {file && (
+          <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs text-slate-600">
+            <span>📎 {file.name}</span>
+            <button
+              type="button"
+              onClick={() => setFile(null)}
+              className="text-slate-400 hover:text-slate-700"
+            >
+              ✕
+            </button>
+          </div>
         )}
+        <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm">
+          <label
+            className="cursor-pointer rounded-lg px-2 py-1 text-lg text-slate-500 hover:bg-slate-100"
+            title="Allega un documento"
+          >
+            📎
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Scrivi o carica un documento…"
+            className="flex-1 bg-transparent px-1 text-slate-800 outline-none"
+          />
+          <button
+            type="submit"
+            disabled={caricamento}
+            className="btn-brand rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-60"
+          >
+            Invia
+          </button>
+        </div>
       </form>
     </div>
   );
 }
 
-function RisultatoCarta({
-  doc,
-  onRicomincia,
-}: {
-  doc: SpiegazioneDoc;
-  onRicomincia: () => void;
-}) {
-  return (
-    <section className="space-y-4">
-      {doc.demo && <BannerDemo />}
-
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="text-lg font-bold text-slate-900">{doc.tipo}</h2>
-          <Badge livello={doc.attendibilita} />
+function Bolla({ m }: { m: Messaggio }) {
+  if (m.ruolo === "utente") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-2xl bg-slate-900 px-4 py-2 text-white">
+          {m.testo}
         </div>
-        <p className="mt-2 text-slate-700">{doc.riassunto}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      <div className="max-w-[92%] whitespace-pre-line rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm">
+        {m.testo}
+      </div>
+      {m.opportunita && m.opportunita.length > 0 && (
+        <div className="space-y-3">
+          {m.opportunita.map((o, i) => (
+            <CardOpportunita key={i} o={o} />
+          ))}
+        </div>
+      )}
+      {m.documento && <CardDocumento doc={m.documento} />}
+      {m.avviso && <Avviso testo={m.avviso} />}
+    </div>
+  );
+}
 
-        {doc.azioni && doc.azioni.length > 0 && (
-          <div className="mt-4">
-            <p className="text-xs font-medium text-slate-500">Cosa fare</p>
-            <ul className="mt-1 space-y-1">
-              {doc.azioni.map((a, i) => (
-                <li key={i} className="flex gap-2 text-sm text-slate-700">
-                  <span className="text-brand">→</span>
-                  <span>{a}</span>
-                </li>
-              ))}
-            </ul>
+/* ------------------------------- Card -------------------------------- */
+
+function CardOpportunita({ o }: { o: Opportunita }) {
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-1 flex items-start justify-between gap-2">
+        <h3 className="font-semibold text-slate-900">{o.titolo}</h3>
+        <Badge livello={o.confidenza} />
+      </div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+        {o.categoria}
+      </p>
+      <p className="mt-2 text-slate-700">{o.perche}</p>
+      <p className="mt-1 text-sm text-slate-500">
+        <span className="font-medium">Da verificare:</span> {o.cosa_verificare}
+      </p>
+
+      {o.documenti && o.documenti.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs font-medium text-slate-500">Documenti utili</p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {o.documenti.map((d, j) => (
+              <span
+                key={j}
+                className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600"
+              >
+                {d}
+              </span>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {doc.scadenze && doc.scadenze.length > 0 && (
-          <div className="mt-4">
-            <p className="text-xs font-medium text-slate-500">Scadenze</p>
-            <ul className="mt-1 space-y-1">
-              {doc.scadenze.map((s, i) => (
-                <li key={i} className="text-sm text-slate-700">
-                  <span className="font-medium">{s.quando}</span> — {s.cosa}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      {o.a_chi_rivolgersi && (
+        <p className="mt-3 text-sm text-slate-600">
+          <span className="font-medium">A chi rivolgerti:</span>{" "}
+          {o.a_chi_rivolgersi}
+        </p>
+      )}
+    </article>
+  );
+}
 
-        {doc.a_chi_rivolgersi && (
-          <p className="mt-4 text-sm text-slate-600">
-            <span className="font-medium">A chi rivolgerti:</span>{" "}
-            {doc.a_chi_rivolgersi}
-          </p>
-        )}
+function CardDocumento({ doc }: { doc: SpiegazioneDoc }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-bold text-slate-900">{doc.tipo}</h3>
+        <Badge livello={doc.attendibilita} />
       </div>
 
-      <Avviso testo={doc.avviso} />
-      <BottoneSecondario onClick={onRicomincia}>
-        Carica un altro documento
-      </BottoneSecondario>
-    </section>
+      {doc.azioni && doc.azioni.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs font-medium text-slate-500">Cosa fare</p>
+          <ul className="mt-1 space-y-1">
+            {doc.azioni.map((a, i) => (
+              <li key={i} className="flex gap-2 text-sm text-slate-700">
+                <span className="text-brand">→</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {doc.scadenze && doc.scadenze.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs font-medium text-slate-500">Scadenze</p>
+          <ul className="mt-1 space-y-1">
+            {doc.scadenze.map((s, i) => (
+              <li key={i} className="text-sm text-slate-700">
+                <span className="font-medium">{s.quando}</span> — {s.cosa}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {doc.a_chi_rivolgersi && (
+        <p className="mt-3 text-sm text-slate-600">
+          <span className="font-medium">A chi rivolgerti:</span>{" "}
+          {doc.a_chi_rivolgersi}
+        </p>
+      )}
+    </div>
   );
 }
 
 /* ------------------------------ Comuni ------------------------------- */
-
-function IntestazioneMotore({ nome, testo }: { nome: string; testo: string }) {
-  return (
-    <div className="mb-4 text-center">
-      <span className="chip-brand rounded-full px-3 py-1 text-sm font-bold">
-        {nome}
-      </span>
-      <p className="mt-2 text-slate-600">{testo}</p>
-    </div>
-  );
-}
 
 function Badge({ livello }: { livello: string }) {
   return (
@@ -604,23 +558,6 @@ function BannerDemo() {
 function Avviso({ testo }: { testo: string }) {
   return (
     <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">{testo}</p>
-  );
-}
-
-function BottoneSecondario({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full rounded-xl border border-slate-900 px-4 py-3 font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
-    >
-      {children}
-    </button>
   );
 }
 

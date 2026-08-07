@@ -63,6 +63,38 @@ export async function analizza(profilo: Profilo): Promise<Analisi> {
   return risposta.json();
 }
 
+export type RispostaAssistente = {
+  motore: string;
+  messaggio: string;
+  documento: SpiegazioneDoc | null;
+  opportunita: Opportunita[];
+  demo: boolean;
+  avviso: string;
+  nota_tecnica?: string;
+};
+
+export async function chiediAssistente(
+  messaggio: string,
+  profilo: Profilo | null,
+  file: File | null
+): Promise<RispostaAssistente> {
+  const modulo = new FormData();
+  modulo.append("messaggio", messaggio);
+  if (profilo) modulo.append("profilo", JSON.stringify(profilo));
+  if (file) modulo.append("file", file);
+
+  const risposta = await fetch(`${API_URL}/api/assistant`, {
+    method: "POST",
+    body: modulo,
+  });
+
+  if (!risposta.ok) {
+    throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
+  }
+
+  return risposta.json();
+}
+
 export async function spiegaDocumento(file: File): Promise<SpiegazioneDoc> {
   const modulo = new FormData();
   modulo.append("file", file);

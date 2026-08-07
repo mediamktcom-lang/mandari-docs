@@ -8,11 +8,14 @@ Avvio locale (dalla cartella app/backend):
     uvicorn main:app --reload
 """
 
+import json
+
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from carta import spiega_documento
+from orchestratore import rispondi
 from spetta import Profilo, genera_analisi
 
 # Carica le variabili dal file .env (se presente), es. la chiave AI.
@@ -46,3 +49,19 @@ async def carta(file: UploadFile = File(...)) -> dict:
     """Riceve un documento (immagine o PDF) e restituisce la spiegazione di CARTA."""
     dati = await file.read()
     return spiega_documento(dati, file.content_type or "application/pdf")
+
+
+@app.post("/api/assistant")
+async def assistant(
+    messaggio: str = Form(""),
+    profilo: str = Form(""),
+    file: UploadFile | None = File(None),
+) -> dict:
+    """Assistente unico (Anya): capisce la richiesta e instrada al motore giusto."""
+    dati = await file.read() if file is not None else None
+    mime = file.content_type if file is not None else None
+    try:
+        prof = json.loads(profilo) if profilo else None
+    except json.JSONDecodeError:
+        prof = None
+    return rispondi(messaggio, dati, mime, prof)
