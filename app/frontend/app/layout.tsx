@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Geist, Geist_Mono, Ma_Shan_Zheng } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,11 +12,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Font "di marca" per il logotipo Mandari (diverso dal resto del testo).
-const fraunces = Fraunces({
+// Font "di marca" calligrafico (orientaleggiante) per il logotipo Mandari.
+const brand = Ma_Shan_Zheng({
   variable: "--font-brand",
   subsets: ["latin"],
-  weight: ["600", "900"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="it"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${brand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

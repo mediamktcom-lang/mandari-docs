@@ -66,7 +66,7 @@ export default function Home() {
       <div className="mx-auto max-w-2xl px-4 py-10">
         <header className="mb-8 text-center">
           <Logo />
-          <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-orange-600">
+          <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-brand">
             La burocrazia, dalla tua parte
           </p>
         </header>
@@ -95,24 +95,10 @@ export default function Home() {
 
 function Logo() {
   return (
-    <div className="flex items-center justify-center gap-3">
-      {/* Marchio: un mandarino arancione con la M come simbolo */}
-      <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-sm">
-        <svg
-          viewBox="0 0 16 16"
-          className="absolute -top-1.5 right-1.5 h-4 w-4 rotate-12"
-          aria-hidden="true"
-        >
-          <path d="M2 12 C 2 5 7 2 14 2 C 14 9 9 13 2 12 Z" fill="#111827" />
-        </svg>
-        <span className="font-brand text-3xl font-black leading-none text-white">
-          M
-        </span>
-      </span>
-      <span className="font-brand text-5xl font-black tracking-tight text-slate-900">
-        Mandari
-      </span>
-    </div>
+    <h1 className="font-brand text-6xl leading-none">
+      <span className="text-brand">M</span>
+      <span className="text-slate-900">andari</span>
+    </h1>
   );
 }
 
@@ -121,10 +107,11 @@ function Logo() {
 function Intro({ onInizia }: { onInizia: () => void }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-      <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-        Scopri cosa ti <span className="text-orange-600">spetta</span>
+      <p className="text-lg font-medium text-slate-500">Scopri cosa ti</p>
+      <h2 className="mt-1 text-6xl font-black tracking-tight text-brand">
+        SPETTA
       </h2>
-      <p className="mx-auto mt-3 max-w-md text-slate-600">
+      <p className="mx-auto mt-4 max-w-md text-slate-600">
         Con <strong>SPETTA</strong>, il motore dei tuoi diritti, scopri in un
         minuto bonus e agevolazioni che ti riguardano — e i primi passi per
         ottenerli.
@@ -138,7 +125,7 @@ function Intro({ onInizia }: { onInizia: () => void }) {
 
       <button
         onClick={onInizia}
-        className="mt-8 w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:bg-orange-600"
+        className="btn-brand mt-8 w-full rounded-xl px-4 py-3 font-semibold transition"
       >
         Inizia
       </button>
@@ -165,7 +152,7 @@ function Intro({ onInizia }: { onInizia: () => void }) {
 
 function Pillola({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
+    <span className="pill-brand rounded-full px-3 py-1 text-sm font-medium">
       {children}
     </span>
   );
@@ -174,7 +161,7 @@ function Pillola({ children }: { children: React.ReactNode }) {
 function MotorePill({ nome, attivo = false }: { nome: string; attivo?: boolean }) {
   if (attivo) {
     return (
-      <span className="rounded-full bg-orange-500 px-3 py-1 text-sm font-bold text-white">
+      <span className="chip-brand rounded-full px-3 py-1 text-sm font-bold">
         {nome}
       </span>
     );
@@ -274,7 +261,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.figli_minori}
               onChange={(e) => aggiorna("figli_minori", e.target.checked)}
-              className="h-5 w-5 accent-orange-500"
+              className="h-5 w-5 accent-[#f2560a]"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -288,7 +275,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.invalidita}
               onChange={(e) => aggiorna("invalidita", e.target.checked)}
-              className="h-5 w-5 accent-orange-500"
+              className="h-5 w-5 accent-[#f2560a]"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -299,7 +286,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.anziani_a_carico}
               onChange={(e) => aggiorna("anziani_a_carico", e.target.checked)}
-              className="h-5 w-5 accent-orange-500"
+              className="h-5 w-5 accent-[#f2560a]"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -363,7 +350,7 @@ function Questionario({
       <button
         type="submit"
         disabled={caricamento}
-        className="w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
+        className="btn-brand w-full rounded-xl px-4 py-3 font-semibold transition disabled:opacity-60"
       >
         {caricamento ? "Analisi in corso…" : "Scopri cosa ti spetta"}
       </button>
@@ -413,7 +400,7 @@ function Risultato({
                 {o.confidenza}
               </span>
             </div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand">
               {o.categoria}
             </p>
             <p className="mt-2 text-slate-700">{o.perche}</p>
