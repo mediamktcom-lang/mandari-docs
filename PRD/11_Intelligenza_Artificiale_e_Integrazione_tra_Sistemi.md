@@ -2,9 +2,11 @@
 
 # Intelligenza Artificiale e Integrazione dei Modelli
 
-Versione: 1.0
+Versione: 1.1
 
 Stato: FROZEN
+
+Revisione 1.1: introdotta la tassonomia motori di dominio / modelli AI e allineamento terminologico.
 
 ---
 
@@ -24,9 +26,9 @@ Le responsabilità rimangono chiaramente separate.
 
 - Il Backend gestisce i dati e la sicurezza.
 - L'Orchestratore coordina il flusso operativo.
-- I Motori AI elaborano esclusivamente il compito ricevuto.
+- I motori di dominio elaborano il compito ricevuto utilizzando i modelli AI necessari.
 - Il Database conserva i dati.
-- Lo Storage conserva gli Atti.
+- Lo Storage conserva gli allegati originali.
 
 L'AI non prende decisioni architetturali e non modifica direttamente i dati persistenti.
 
@@ -48,6 +50,19 @@ A titolo esemplificativo:
 - modelli di ragionamento.
 
 La sostituzione di un modello non modifica l'architettura del sistema purché venga mantenuto il contratto funzionale del Motore.
+
+---
+
+## Tassonomia: motori di dominio e modelli AI
+
+Per eliminare l'ambiguità terminologica presente nei documenti precedenti, si definisce la seguente tassonomia, valida per l'intero ecosistema.
+
+- **Motori di dominio**: SPETTA, DATA, CARTA e AFFIDO. Rappresentano le unità di responsabilità funzionale del prodotto, definite in PRD-004.
+- **Modelli AI** (o capacità AI): modelli linguistici (LLM), OCR, estrazione dati, classificazione, ricerca semantica, embedding, ragionamento. Rappresentano gli strumenti tecnici.
+
+Relazione: ogni motore di dominio è realizzato come un servizio che utilizza uno o più modelli AI, sempre attraverso il Backend. Uno stesso modello AI può essere condiviso da più motori di dominio (ad esempio l'OCR utilizzato da CARTA, o gli embedding utilizzati sia da CARTA sia dalla ricerca semantica).
+
+Convenzione: nel presente documento e negli altri PRD/ARCH il termine "Motore" indica un motore di dominio; le espressioni "modello AI" o "Motore AI" indicano i modelli o le capacità sottostanti. L'Orchestratore (Anya) coordina i motori di dominio; i modelli AI non prendono decisioni e non comunicano direttamente tra loro.
 
 ---
 
@@ -399,6 +414,8 @@ Tali aspetti saranno descritti nei documenti ARCH della fase tecnica.
 # 26. Decisioni Congelate
 
 ✓ L'Intelligenza Artificiale rappresenta uno strumento operativo e non il centro decisionale del sistema.
+
+✓ I motori di dominio (SPETTA, DATA, CARTA, AFFIDO) sono realizzati come servizi che utilizzano uno o più modelli AI sottostanti; i modelli AI non coincidono con i motori.
 
 ✓ L'Orchestratore costruisce il Contesto Operativo per ogni richiesta.
 

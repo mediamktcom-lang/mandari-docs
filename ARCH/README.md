@@ -16,6 +16,7 @@ Stato: **Review** (Fase 2 in corso — da congelare).
 | 005 | [Identity, Client e Session Management](05_Identity_Client_Session_Management.md) | Identità unica, client, sessioni, abbonamento |
 | 006 | [Anya, AI e Architettura Intelligente](06_Anya_AI_Architettura_Intelligente.md) | Orchestrazione AI, LLM multipli, memoria di sistema |
 
-> **Nota di allineamento (da recepire nei PRD):** ARCH-003 introduce lo *Storage Provider*
-> ibrido (documenti su cloud personale dell'utente). Questo estende il modello di
-> persistenza descritto in PRD-008 e va formalizzato con una revisione di PRD-008.
+> **Nota di allineamento (risolta):** il modello di storage a quota con *Storage Provider*
+> personale (originali su Mandari entro quota, poi su cloud personale dell'utente) è stato
+> formalizzato in PRD-008 v1.1 e in ARCH-003. La tassonomia motori di dominio / modelli AI
+> è definita in PRD-011 v1.1.

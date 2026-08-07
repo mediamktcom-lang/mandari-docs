@@ -22,6 +22,8 @@ Anya rappresenta il sistema intelligente di orchestrazione di Mandari.
 
 I modelli di Intelligenza Artificiale costituiscono strumenti utilizzati da Anya e non il sistema stesso.
 
+Anya coordina i motori di dominio (SPETTA, DATA, CARTA, AFFIDO), ciascuno dei quali utilizza uno o più modelli AI attraverso il Backend. I modelli AI (LLM, OCR, classificazione, ricerca semantica, embedding) sono strumenti: non prendono decisioni e non comunicano direttamente tra loro. La tassonomia completa è definita in PRD-011.
+
 ---
 
 # 3. Ruolo di Anya

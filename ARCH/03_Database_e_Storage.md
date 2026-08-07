@@ -40,7 +40,7 @@ Le informazioni e la conoscenza costituiscono il patrimonio del sistema.
 
 I documenti originali rimangono proprietà del cittadino.
 
-Mandari non richiede necessariamente la conservazione permanente dei documenti originali.
+Mandari conserva gli originali nel proprio storage entro una quota inclusa nel piano dell'Owner; oltre la quota, la conservazione degli originali viene delegata a uno Storage Provider personale dell'utente. La conoscenza estratta resta in ogni caso patrimonio permanente di Mandari.
 
 ---
 
@@ -102,6 +102,15 @@ Il documento originale può essere conservato:
 - presso futuri provider compatibili.
 
 Mandari non impone una posizione fisica unica dei documenti.
+
+La scelta del luogo di conservazione segue il modello a quota definito in PRD-008:
+
+- entro la quota inclusa nel piano, gli originali risiedono nello Storage di Mandari, con disponibilità garantita;
+- oltre la quota, Mandari invita l'utente a collegare uno Storage Provider personale.
+
+Tra gli Storage Provider personali, il cloud personale è raccomandato per la durabilità; lo spazio locale di un device è disponibile come opzione, con avviso esplicito che l'originale non è garantito in caso di perdita o sostituzione del device.
+
+Gli originali inviati a uno Storage Provider di terzi devono essere cifrati. Le modalità tecniche della cifratura, la gestione delle chiavi e la policy di spostamento degli originali oltre la quota sono definite in fase implementativa.
 
 ---
 
@@ -225,6 +234,12 @@ L'architettura prevede l'aggiunta futura di ulteriori Storage Provider senza mod
 ✓ Mandari non è proprietario dei documenti del cittadino, ma della conoscenza amministrativa che da essi deriva.
 
 ✓ Ogni futuro Storage Provider dovrà rispettare l'interfaccia definita dal Backend.
+
+✓ Gli originali seguono un modello a quota: entro la quota nello Storage di Mandari, oltre la quota su uno Storage Provider personale dell'utente.
+
+✓ Il cloud personale è raccomandato; lo spazio su device è opzionale e senza garanzia di durabilità.
+
+✓ Gli originali inviati a Storage Provider di terzi devono essere cifrati.
 
 ✓ L'architettura di persistenza del progetto viene dichiarata congelata.
 

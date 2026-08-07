@@ -1,9 +1,11 @@
 # PRD-008
 # Architettura Fisica e Persistenza
 
-Versione: 1.0
+Versione: 1.1
 
 Stato: FROZEN
+
+Revisione 1.1: introdotto il modello di storage a quota con Storage Provider personale, in allineamento con ARCH-003.
 
 Progetto: Mandari
 
@@ -282,6 +284,8 @@ I dispositivi costituiscono esclusivamente punti di accesso all'ecosistema.
 
 La perdita o la sostituzione di un dispositivo non deve compromettere il Fascicolo Amministrativo né la conoscenza costruita nel tempo.
 
+Questa garanzia riguarda la conoscenza (Atti, metadati, indici, embedding), che risiede sempre nei servizi di Mandari. Gli allegati originali eventualmente conservati su uno storage personale dell'utente — in particolare lo spazio locale di un device — seguono la durabilità del provider scelto: la loro eventuale perdita non compromette la conoscenza, ma può rendere non più recuperabile l'originale.
+
 ---
 
 ## Persistenza orientata alla continuità
@@ -436,6 +440,26 @@ Questo principio rende possibile cambiare tecnologia di storage senza modificare
 
 ---
 
+## Modello di storage a quota e Storage Provider
+
+Gli allegati originali costituiscono la componente più pesante e in continua crescita del sistema. Per mantenere sostenibili i costi di conservazione, Mandari adotta un modello ibrido a quota.
+
+- La **conoscenza** (Atti, metadati, indici, embedding) risiede sempre ed esclusivamente nei servizi di Mandari. Rappresenta il patrimonio del sistema e non è soggetta a delega.
+- Gli **allegati originali** seguono una logica a quota:
+  - ogni Owner dispone di una quota di Mandari Storage inclusa nel proprio piano;
+  - finché l'occupazione resta entro la quota, gli originali sono conservati nello storage di Mandari, con disponibilità garantita;
+  - al superamento della quota, Mandari invita l'utente a collegare uno **Storage Provider personale** sul quale conservare gli originali.
+
+Uno Storage Provider personale può essere un cloud personale (raccomandato per la durabilità) oppure lo spazio locale di un device (opzione disponibile con avviso esplicito: l'originale non è garantito in caso di perdita o sostituzione del device).
+
+L'Atto conserva esclusivamente il **riferimento** all'allegato (Storage Provider e identificatore), mai il file. Lo spostamento di un originale da un provider all'altro modifica soltanto il riferimento e non altera in alcun modo l'Atto né la conoscenza.
+
+Quando un originale non è temporaneamente raggiungibile (device offline, autorizzazione al cloud revocata o scaduta), Mandari continua a operare sulla conoscenza già estratta e recupera l'originale on-demand quando torna disponibile.
+
+Gli originali inviati a uno Storage Provider di terzi devono essere protetti mediante cifratura. Le modalità tecniche della cifratura, la gestione delle chiavi e la policy di spostamento degli originali oltre la quota (ad esempio il trasferimento degli originali meno consultati) sono definite nei documenti ARCH e in fase implementativa.
+
+---
+
 ## Ridondanza e disponibilità
 
 Lo storage dovrà garantire:
@@ -475,6 +499,14 @@ La separazione tra Atti e allegati consente di:
 ✓ Ogni allegato possiede un identificatore permanente.
 
 ✓ Gli altri servizi accedono agli allegati esclusivamente attraverso tale identificatore.
+
+✓ La conoscenza (Atti, metadati, indici, embedding) risiede sempre nei servizi di Mandari e non è soggetta a delega.
+
+✓ Gli originali seguono un modello a quota: entro la quota nello storage di Mandari, oltre la quota su uno Storage Provider personale dell'utente.
+
+✓ Lo Storage Provider personale può essere un cloud (raccomandato) o lo spazio di un device (opzione con avviso di non garanzia della durabilità).
+
+✓ Gli originali inviati a uno Storage Provider di terzi devono essere cifrati.
 
 ✓ La tecnologia utilizzata per lo storage rimane indipendente dal modello informativo.
 
