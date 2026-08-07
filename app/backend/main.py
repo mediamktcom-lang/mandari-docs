@@ -9,9 +9,10 @@ Avvio locale (dalla cartella app/backend):
 """
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from carta import spiega_documento
 from spetta import Profilo, genera_analisi
 
 # Carica le variabili dal file .env (se presente), es. la chiave AI.
@@ -38,3 +39,10 @@ def health() -> dict:
 def analyze(profilo: Profilo) -> dict:
     """Riceve il profilo del questionario e restituisce l'analisi di SPETTA."""
     return genera_analisi(profilo)
+
+
+@app.post("/api/carta")
+async def carta(file: UploadFile = File(...)) -> dict:
+    """Riceve un documento (immagine o PDF) e restituisce la spiegazione di CARTA."""
+    dati = await file.read()
+    return spiega_documento(dati, file.content_type or "application/pdf")

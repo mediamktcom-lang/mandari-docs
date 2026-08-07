@@ -32,6 +32,20 @@ export type Analisi = {
   nota_tecnica?: string;
 };
 
+export type Scadenza = { cosa: string; quando: string };
+
+export type SpiegazioneDoc = {
+  demo: boolean;
+  tipo: string;
+  riassunto: string;
+  azioni: string[];
+  scadenze: Scadenza[];
+  a_chi_rivolgersi: string;
+  attendibilita: string;
+  avviso: string;
+  nota_tecnica?: string;
+};
+
 // Indirizzo del backend. In sviluppo è http://localhost:8000.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -40,6 +54,22 @@ export async function analizza(profilo: Profilo): Promise<Analisi> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(profilo),
+  });
+
+  if (!risposta.ok) {
+    throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
+  }
+
+  return risposta.json();
+}
+
+export async function spiegaDocumento(file: File): Promise<SpiegazioneDoc> {
+  const modulo = new FormData();
+  modulo.append("file", file);
+
+  const risposta = await fetch(`${API_URL}/api/carta`, {
+    method: "POST",
+    body: modulo,
   });
 
   if (!risposta.ok) {
