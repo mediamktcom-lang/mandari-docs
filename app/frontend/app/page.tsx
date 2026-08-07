@@ -62,21 +62,16 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-800">
+    <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-2xl px-4 py-10">
-        {/* Intestazione */}
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Mandari
-          </h1>
-          <p className="mt-1 text-sm font-medium uppercase tracking-widest text-emerald-600">
-            Assistente amministrativo
+          <Logo />
+          <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-orange-600">
+            La burocrazia, dalla tua parte
           </p>
         </header>
 
-        {fase === "intro" && (
-          <Intro onInizia={() => setFase("form")} />
-        )}
+        {fase === "intro" && <Intro onInizia={() => setFase("form")} />}
 
         {fase === "form" && (
           <Questionario
@@ -96,17 +91,43 @@ export default function Home() {
   );
 }
 
+/* -------------------------------- Logo ------------------------------- */
+
+function Logo() {
+  return (
+    <div className="flex items-center justify-center gap-3">
+      {/* Marchio: un mandarino arancione con la M come simbolo */}
+      <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-sm">
+        <svg
+          viewBox="0 0 16 16"
+          className="absolute -top-1.5 right-1.5 h-4 w-4 rotate-12"
+          aria-hidden="true"
+        >
+          <path d="M2 12 C 2 5 7 2 14 2 C 14 9 9 13 2 12 Z" fill="#111827" />
+        </svg>
+        <span className="font-brand text-3xl font-black leading-none text-white">
+          M
+        </span>
+      </span>
+      <span className="font-brand text-5xl font-black tracking-tight text-slate-900">
+        Mandari
+      </span>
+    </div>
+  );
+}
+
 /* ------------------------------- Intro ------------------------------- */
 
 function Intro({ onInizia }: { onInizia: () => void }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-      <h2 className="text-2xl font-bold text-slate-900">
-        Scopri cosa potrebbe spettarti
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+        Scopri cosa ti <span className="text-orange-600">spetta</span>
       </h2>
       <p className="mx-auto mt-3 max-w-md text-slate-600">
-        Rispondi a poche domande sulla tua situazione: Mandari ti mostra diritti,
-        bonus e agevolazioni che potresti approfondire, con i primi passi da fare.
+        Con <strong>SPETTA</strong>, il motore dei tuoi diritti, scopri in un
+        minuto bonus e agevolazioni che ti riguardano — e i primi passi per
+        ottenerli.
       </p>
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -117,12 +138,24 @@ function Intro({ onInizia }: { onInizia: () => void }) {
 
       <button
         onClick={onInizia}
-        className="mt-8 w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
+        className="mt-8 w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:bg-orange-600"
       >
         Inizia
       </button>
 
-      <p className="mt-4 text-xs text-slate-400">
+      <div className="mt-8 border-t border-slate-100 pt-5">
+        <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
+          I motori di Mandari
+        </p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          <MotorePill nome="SPETTA" attivo />
+          <MotorePill nome="DATA" />
+          <MotorePill nome="CARTA" />
+          <MotorePill nome="AFFIDO" />
+        </div>
+      </div>
+
+      <p className="mt-5 text-xs text-slate-400">
         I dati che inserisci restano sul tuo dispositivo e servono solo per
         generare l&apos;analisi.
       </p>
@@ -132,8 +165,23 @@ function Intro({ onInizia }: { onInizia: () => void }) {
 
 function Pillola({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+    <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
       {children}
+    </span>
+  );
+}
+
+function MotorePill({ nome, attivo = false }: { nome: string; attivo?: boolean }) {
+  if (attivo) {
+    return (
+      <span className="rounded-full bg-orange-500 px-3 py-1 text-sm font-bold text-white">
+        {nome}
+      </span>
+    );
+  }
+  return (
+    <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-400">
+      {nome} · presto
     </span>
   );
 }
@@ -226,7 +274,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.figli_minori}
               onChange={(e) => aggiorna("figli_minori", e.target.checked)}
-              className="h-5 w-5 accent-emerald-600"
+              className="h-5 w-5 accent-orange-500"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -240,7 +288,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.invalidita}
               onChange={(e) => aggiorna("invalidita", e.target.checked)}
-              className="h-5 w-5 accent-emerald-600"
+              className="h-5 w-5 accent-orange-500"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -251,7 +299,7 @@ function Questionario({
               type="checkbox"
               checked={profilo.anziani_a_carico}
               onChange={(e) => aggiorna("anziani_a_carico", e.target.checked)}
-              className="h-5 w-5 accent-emerald-600"
+              className="h-5 w-5 accent-orange-500"
             />
             <span className="text-slate-600">Sì</span>
           </label>
@@ -315,9 +363,9 @@ function Questionario({
       <button
         type="submit"
         disabled={caricamento}
-        className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+        className="w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
       >
-        {caricamento ? "Analisi in corso…" : "Scopri cosa potrebbe spettarti"}
+        {caricamento ? "Analisi in corso…" : "Scopri cosa ti spetta"}
       </button>
 
       {errore && (
@@ -339,7 +387,7 @@ function Risultato({
   return (
     <section className="space-y-4">
       {analisi.demo && (
-        <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+        <p className="rounded-lg bg-slate-100 p-3 text-sm text-slate-600">
           Modalità dimostrativa: analisi basata su regole semplici (l&apos;AI non
           è al momento disponibile).
         </p>
@@ -365,7 +413,7 @@ function Risultato({
                 {o.confidenza}
               </span>
             </div>
-            <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">
+            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
               {o.categoria}
             </p>
             <p className="mt-2 text-slate-700">{o.perche}</p>
@@ -408,7 +456,7 @@ function Risultato({
 
       <button
         onClick={onRicomincia}
-        className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
+        className="w-full rounded-xl border border-slate-900 px-4 py-3 font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
       >
         Rifai il questionario
       </button>
