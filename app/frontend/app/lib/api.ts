@@ -2,9 +2,13 @@
 
 export type Profilo = {
   regione: string;
+  eta: number;
+  cittadinanza: string;
   composizione_nucleo: string;
   numero_figli: number;
   figli_minori: boolean;
+  invalidita: boolean;
+  anziani_a_carico: boolean;
   situazione_lavorativa: string;
   isee_indicativo: string;
   situazione_abitativa: string;
@@ -16,6 +20,8 @@ export type Opportunita = {
   categoria: string;
   perche: string;
   cosa_verificare: string;
+  documenti: string[];
+  a_chi_rivolgersi: string;
   confidenza: string;
 };
 
