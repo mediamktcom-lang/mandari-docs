@@ -48,11 +48,20 @@ export type SpiegazioneDoc = {
   nota_tecnica?: string;
 };
 
+export type Soluzione = {
+  titolo: string;
+  tipo: string;
+  perche: string;
+  come_procedere: string;
+  documenti: string[];
+};
+
 export type RispostaAssistente = {
   motore: string;
   messaggio: string;
   documento: SpiegazioneDoc | null;
   opportunita: Opportunita[];
+  soluzioni: Soluzione[];
   demo: boolean;
   avviso: string;
   nota_tecnica?: string;

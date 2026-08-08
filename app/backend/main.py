@@ -127,6 +127,7 @@ async def _persisti_interazione(token: str, messaggio: str, risposta: dict) -> N
     """Crea l'Atto (e le eventuali scadenze) corrispondente all'interazione."""
     doc = risposta.get("documento")
     opportunita = risposta.get("opportunita") or []
+    soluzioni = risposta.get("soluzioni") or []
     motore = risposta.get("motore", "")
 
     if doc:
@@ -158,6 +159,23 @@ async def _persisti_interazione(token: str, messaggio: str, risposta: dict) -> N
                 "metadati": {"n_opportunita": len(opportunita)},
                 "testo_ricerca": " ".join(
                     [messaggio] + [o.get("titolo", "") for o in opportunita]
+                ),
+            },
+        )
+    elif soluzioni:
+        await crea_atto(
+            token,
+            {
+                "tipo": "affido",
+                "titolo": (messaggio[:80] or "Ricerca soluzioni"),
+                "origine": "AFFIDO",
+                "contenuto": {
+                    "messaggio": risposta.get("messaggio", ""),
+                    "soluzioni": soluzioni,
+                },
+                "metadati": {"n_soluzioni": len(soluzioni)},
+                "testo_ricerca": " ".join(
+                    [messaggio] + [s.get("titolo", "") for s in soluzioni]
                 ),
             },
         )

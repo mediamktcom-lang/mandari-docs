@@ -42,6 +42,7 @@ def rispondi(
             "messaggio": testo,
             "documento": doc,
             "opportunita": [],
+            "soluzioni": [],
             "demo": doc.get("demo", False),
             "avviso": doc.get("avviso", ""),
         }
@@ -64,6 +65,7 @@ def rispondi(
         "messaggio": "Scrivimi una domanda oppure carica un documento: ci penso io.",
         "documento": None,
         "opportunita": [],
+        "soluzioni": [],
         "demo": False,
         "avviso": "",
     }
@@ -83,6 +85,7 @@ def _anya(messaggio: str, profilo: dict | None, chiave: str) -> dict:
         "messaggio": d.get("messaggio", ""),
         "documento": None,
         "opportunita": d.get("opportunita", []),
+        "soluzioni": d.get("soluzioni", []),
         "demo": False,
         "avviso": d.get("avviso", ""),
     }
@@ -121,11 +124,24 @@ Rispondi ESCLUSIVAMENTE con un JSON valido in questo formato, senza testo prima 
       "confidenza": "alta | media | bassa"
     }}
   ],
+  "soluzioni": [
+    {{
+      "titolo": "Nome della soluzione (es. CAF, commercialista, asilo nido comunale)",
+      "tipo": "Professionista | Servizio pubblico | Ente | Partner | Informazione",
+      "perche": "Perché è adatta al bisogno (1 frase)",
+      "come_procedere": "Il primo passo concreto da fare",
+      "documenti": ["eventuali documenti utili da preparare"]
+    }}
+  ],
   "avviso": "eventuale avviso se pertinente (es. non è consulenza), altrimenti stringa vuota"
 }}
 
-Regole: compila "opportunita" SOLO quando la competenza è SPETTA (altrimenti lista vuota).
-Non inventare dati non desumibili dal profilo o dal messaggio. Massimo 5 opportunità."""
+Regole:
+- Compila "opportunita" SOLO quando la competenza è SPETTA (altrimenti lista vuota).
+- Compila "soluzioni" SOLO quando la competenza è AFFIDO, cioè quando l'utente cerca
+  a chi rivolgersi o una soluzione a un bisogno (professionista, servizio, ente,
+  asilo nido, medico, ecc.). Altrimenti lista vuota. Massimo 5 soluzioni.
+- Non inventare dati non desumibili dal profilo o dal messaggio. Massimo 5 opportunità."""
 
 
 def _profilo_testo(profilo: dict | None) -> str:
@@ -166,6 +182,7 @@ def _demo_testo() -> dict:
         ),
         "documento": None,
         "opportunita": [],
+        "soluzioni": [],
         "demo": True,
         "avviso": AVVISO_GENERALE,
     }

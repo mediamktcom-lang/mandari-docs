@@ -11,6 +11,7 @@ import {
   type Opportunita,
   type Profilo,
   type ScadenzaRow,
+  type Soluzione,
   type SpiegazioneDoc,
 } from "./lib/api";
 import { assicuraSessione } from "./lib/supabase";
@@ -119,6 +120,7 @@ function etichettaTipo(tipo: string): string {
   const m: Record<string, string> = {
     documento: "Documento",
     analisi_spetta: "Analisi diritti",
+    affido: "Soluzioni",
     conversazione: "Conversazione",
   };
   return m[tipo] ?? tipo;
@@ -221,6 +223,9 @@ function DettaglioAtto({ a }: { a: Atto }) {
   const opp = Array.isArray(c.opportunita)
     ? (c.opportunita as { titolo?: string }[])
     : [];
+  const sol = Array.isArray(c.soluzioni)
+    ? (c.soluzioni as { titolo?: string }[])
+    : [];
 
   return (
     <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm text-slate-700">
@@ -240,6 +245,13 @@ function DettaglioAtto({ a }: { a: Atto }) {
         <ul className="list-disc space-y-0.5 pl-5">
           {opp.map((o, i) => (
             <li key={i}>{o.titolo}</li>
+          ))}
+        </ul>
+      )}
+      {sol.length > 0 && (
+        <ul className="list-disc space-y-0.5 pl-5">
+          {sol.map((s, i) => (
+            <li key={i}>{s.titolo}</li>
           ))}
         </ul>
       )}
@@ -534,6 +546,7 @@ type Messaggio = {
   ruolo: "utente" | "mandari";
   testo: string;
   opportunita?: Opportunita[];
+  soluzioni?: Soluzione[];
   documento?: SpiegazioneDoc | null;
   avviso?: string;
 };
@@ -575,6 +588,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
           ruolo: "mandari",
           testo: r.messaggio,
           opportunita: r.opportunita ?? [],
+          soluzioni: r.soluzioni ?? [],
           documento: r.documento ?? null,
           avviso: r.avviso,
         },
@@ -673,6 +687,13 @@ function Bolla({ m }: { m: Messaggio }) {
           ))}
         </div>
       )}
+      {m.soluzioni && m.soluzioni.length > 0 && (
+        <div className="space-y-3">
+          {m.soluzioni.map((s, i) => (
+            <CardSoluzione key={i} s={s} />
+          ))}
+        </div>
+      )}
       {m.documento && <CardDocumento doc={m.documento} />}
       {m.avviso && <Avviso testo={m.avviso} />}
     </div>
@@ -717,6 +738,41 @@ function CardOpportunita({ o }: { o: Opportunita }) {
           <span className="font-medium">A chi rivolgerti:</span>{" "}
           {o.a_chi_rivolgersi}
         </p>
+      )}
+    </article>
+  );
+}
+
+function CardSoluzione({ s }: { s: Soluzione }) {
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-1 flex items-start justify-between gap-2">
+        <h3 className="font-semibold text-slate-900">{s.titolo}</h3>
+        <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+          {s.tipo}
+        </span>
+      </div>
+      <p className="mt-2 text-slate-700">{s.perche}</p>
+      {s.come_procedere && (
+        <p className="mt-2 text-sm text-slate-600">
+          <span className="font-medium">Come procedere:</span>{" "}
+          {s.come_procedere}
+        </p>
+      )}
+      {s.documenti && s.documenti.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs font-medium text-slate-500">Documenti utili</p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {s.documenti.map((d, j) => (
+              <span
+                key={j}
+                className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600"
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </article>
   );
