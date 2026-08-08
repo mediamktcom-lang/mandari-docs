@@ -178,7 +178,7 @@ async def assistant(
     contesto = ""
     if token:
         persona_id = persona or await persona_self(token)
-        contesto = await recupera_contesto(token, persona_id)
+        contesto = await recupera_contesto(token, persona_id, messaggio)
 
     risposta = rispondi(messaggio, dati, mime, prof, contesto)
 

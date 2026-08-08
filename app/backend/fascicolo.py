@@ -12,6 +12,7 @@ risposta all'utente.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import os
@@ -110,6 +111,13 @@ async def salva_profilo(token: str, profilo: dict) -> None:
 
 async def crea_atto(token: str, atto: dict) -> str | None:
     """Crea un Atto nel Fascicolo. Restituisce l'id se disponibile."""
+    # Indicizzazione semantica: calcola l'embedding del testo dell'Atto
+    if atto.get("testo_ricerca") and "embedding" not in atto:
+        from intelligenza import calcola_embedding
+
+        emb = await asyncio.to_thread(calcola_embedding, atto["testo_ricerca"])
+        if emb:
+            atto["embedding"] = emb
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.post(
@@ -294,11 +302,9 @@ async def salva_allegato(
     return None
 
 
-async def recupera_contesto(token: str, persona_id: str | None = None) -> str:
-    """Riepilogo compatto degli Atti recenti (della persona attiva), per Anya."""
-    atti = await elenco_atti(token, persona_id=persona_id)
+def _riepiloga_atti(atti: list) -> str:
     righe = []
-    for a in atti[:8]:
+    for a in atti:
         c = a.get("contenuto")
         snippet = ""
         if isinstance(c, dict):
@@ -308,6 +314,44 @@ async def recupera_contesto(token: str, persona_id: str | None = None) -> str:
             riga += f": {snippet}"
         righe.append(riga)
     return "\n".join(righe)
+
+
+async def _cerca_simili(
+    token: str, embedding: str, persona_id: str | None, k: int = 6
+) -> list:
+    """Chiama la ricerca semantica (RPC) sugli Atti dell'utente."""
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            r = await client.post(
+                f"{_base()}/rest/v1/rpc/cerca_atti_simili",
+                headers=_headers(token, "return=representation"),
+                json={
+                    "query_embedding": embedding,
+                    "p_persona": persona_id,
+                    "k": k,
+                },
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
+
+
+async def recupera_contesto(
+    token: str, persona_id: str | None = None, messaggio: str = ""
+) -> str:
+    """Contesto per Anya: prima ricerca semantica, poi ripiego sugli Atti recenti."""
+    from intelligenza import calcola_embedding
+
+    emb = calcola_embedding(messaggio) if messaggio else None
+    if emb:
+        simili = await _cerca_simili(token, emb, persona_id)
+        if simili:
+            return _riepiloga_atti(simili)
+
+    atti = await elenco_atti(token, persona_id=persona_id)
+    return _riepiloga_atti(atti[:8])
 
 
 async def elenco_scadenze(token: str, persona_id: str | None = None) -> list:
