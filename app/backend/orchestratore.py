@@ -28,6 +28,7 @@ def rispondi(
     dati_file: bytes | None,
     mime: str | None,
     profilo: dict | None,
+    contesto: str = "",
 ) -> dict:
     """Punto di ingresso unico: instrada e costruisce la risposta."""
     messaggio = (messaggio or "").strip()
@@ -52,7 +53,7 @@ def rispondi(
         chiave = os.getenv("GEMINI_API_KEY", "").strip()
         if chiave:
             try:
-                return _anya(messaggio, profilo, chiave)
+                return _anya(messaggio, profilo, chiave, contesto)
             except Exception as errore:
                 demo = _demo_testo()
                 demo["nota_tecnica"] = f"Fallback demo (AI non disponibile: {errore})"
@@ -71,13 +72,15 @@ def rispondi(
     }
 
 
-def _anya(messaggio: str, profilo: dict | None, chiave: str) -> dict:
+def _anya(
+    messaggio: str, profilo: dict | None, chiave: str, contesto: str = ""
+) -> dict:
     from google import genai
 
     modello = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
     client = genai.Client(api_key=chiave)
     risposta = client.models.generate_content(
-        model=modello, contents=_prompt(messaggio, profilo)
+        model=modello, contents=_prompt(messaggio, profilo, contesto)
     )
     d = _estrai_json((risposta.text or "").strip())
     return {
@@ -91,11 +94,16 @@ def _anya(messaggio: str, profilo: dict | None, chiave: str) -> dict:
     }
 
 
-def _prompt(messaggio: str, profilo: dict | None) -> str:
+def _prompt(messaggio: str, profilo: dict | None, contesto: str = "") -> str:
     profilo_txt = _profilo_testo(profilo)
+    memoria = contesto.strip() or "Nessun elemento ancora nel Fascicolo."
     return f"""Sei Anya, l'assistente unico di Mandari, che aiuta i cittadini italiani
 con la burocrazia. L'utente NON sa che esistono motori interni: percepisce un solo
 assistente. Capisci la sua richiesta e rispondi in modo utile, semplice e concreto.
+
+Memoria del Fascicolo (cosa Mandari ha già raccolto per questo utente; usala per
+contestualizzare e collegare, senza ripeterla inutilmente):
+{memoria}
 
 Classifica internamente quale competenza stai usando:
 - SPETTA: diritti, bonus, agevolazioni, esenzioni ("cosa mi spetta", "ho diritto a…")

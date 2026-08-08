@@ -157,6 +157,22 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
     return []
 
 
+async def recupera_contesto(token: str) -> str:
+    """Riepilogo compatto degli Atti recenti dell'utente, per contestualizzare Anya."""
+    atti = await elenco_atti(token)
+    righe = []
+    for a in atti[:8]:
+        c = a.get("contenuto")
+        snippet = ""
+        if isinstance(c, dict):
+            snippet = (c.get("riassunto") or c.get("messaggio") or "")[:160]
+        riga = f"- [{a.get('origine', '')}] {a.get('titolo', '')}"
+        if snippet:
+            riga += f": {snippet}"
+        righe.append(riga)
+    return "\n".join(righe)
+
+
 async def elenco_scadenze(token: str) -> list:
     """Restituisce le scadenze del Fascicolo (motore DATA)."""
     params = {

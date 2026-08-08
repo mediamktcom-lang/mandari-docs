@@ -21,6 +21,7 @@ from fascicolo import (
     elenco_atti,
     elenco_scadenze,
     estrai_token,
+    recupera_contesto,
     salva_profilo,
 )
 from orchestratore import rispondi
@@ -115,9 +116,11 @@ async def assistant(
     except json.JSONDecodeError:
         prof = None
 
-    risposta = rispondi(messaggio, dati, mime, prof)
-
     token = estrai_token(authorization)
+    contesto = await recupera_contesto(token) if token else ""
+
+    risposta = rispondi(messaggio, dati, mime, prof, contesto)
+
     if token:
         await _persisti_interazione(token, messaggio, risposta)
     return risposta
