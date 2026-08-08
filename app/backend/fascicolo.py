@@ -126,7 +126,12 @@ async def crea_atto(token: str, atto: dict) -> str | None:
     return None
 
 
-async def crea_scadenze(token: str, atto_id: str | None, scadenze: list) -> None:
+async def crea_scadenze(
+    token: str,
+    atto_id: str | None,
+    scadenze: list,
+    persona_id: str | None = None,
+) -> None:
     """Registra le scadenze trovate (motore DATA)."""
     righe = []
     for s in scadenze or []:
@@ -140,6 +145,8 @@ async def crea_scadenze(token: str, atto_id: str | None, scadenze: list) -> None
             riga["quando"] = data
         if atto_id:
             riga["atto_id"] = atto_id
+        if persona_id:
+            riga["persona_id"] = persona_id
         righe.append(riga)
     if not righe:
         return
@@ -154,7 +161,9 @@ async def crea_scadenze(token: str, atto_id: str | None, scadenze: list) -> None
         pass
 
 
-async def elenco_atti(token: str, q: str | None = None) -> list:
+async def elenco_atti(
+    token: str, q: str | None = None, persona_id: str | None = None
+) -> list:
     """Restituisce gli Atti del Fascicolo (più recenti prima), con ricerca opzionale."""
     params = {
         "select": "id,tipo,titolo,origine,created_at,metadati,contenuto",
@@ -162,6 +171,8 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
     }
     if q:
         params["or"] = f"(titolo.ilike.*{q}*,testo_ricerca.ilike.*{q}*)"
+    if persona_id:
+        params["persona_id"] = f"eq.{persona_id}"
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
@@ -172,6 +183,62 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
     except Exception:
         pass
     return []
+
+
+async def elenco_persone(token: str) -> list:
+    """Le persone gestite dall'utente (sé stesso + profili aggiunti)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/persone?select=*&order=is_self.desc,created_at.asc",
+                headers=_get_headers(token),
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
+
+
+async def crea_persona(
+    token: str, nome: str, relazione: str = "", is_self: bool = False
+) -> str | None:
+    """Crea una persona gestita. Restituisce l'id."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"{_base()}/rest/v1/persone",
+                headers=_headers(token, "return=representation"),
+                json={"nome": nome, "relazione": relazione, "is_self": is_self},
+            )
+            if r.status_code < 300:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    return d[0].get("id")
+    except Exception:
+        pass
+    return None
+
+
+async def persona_self(token: str) -> str | None:
+    """Restituisce (creandola se serve) la persona 'sé stesso' dell'utente."""
+    for p in await elenco_persone(token):
+        if p.get("is_self"):
+            return p.get("id")
+    pid = await crea_persona(token, "Tu", "", True)
+    if pid:
+        # Collega al profilo personale gli Atti/scadenze creati prima dei profili
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                for tab in ("atti", "scadenze"):
+                    await client.patch(
+                        f"{_base()}/rest/v1/{tab}?persona_id=is.null",
+                        headers=_headers(token, "return=minimal"),
+                        json={"persona_id": pid},
+                    )
+        except Exception:
+            pass
+    return pid
 
 
 async def leggi_piano(token: str) -> str:
@@ -227,9 +294,9 @@ async def salva_allegato(
     return None
 
 
-async def recupera_contesto(token: str) -> str:
-    """Riepilogo compatto degli Atti recenti dell'utente, per contestualizzare Anya."""
-    atti = await elenco_atti(token)
+async def recupera_contesto(token: str, persona_id: str | None = None) -> str:
+    """Riepilogo compatto degli Atti recenti (della persona attiva), per Anya."""
+    atti = await elenco_atti(token, persona_id=persona_id)
     righe = []
     for a in atti[:8]:
         c = a.get("contenuto")
@@ -243,7 +310,7 @@ async def recupera_contesto(token: str) -> str:
     return "\n".join(righe)
 
 
-async def elenco_scadenze(token: str) -> list:
+async def elenco_scadenze(token: str, persona_id: str | None = None) -> list:
     """Restituisce le scadenze del Fascicolo (motore DATA)."""
     params = {
         "select": (
@@ -252,6 +319,8 @@ async def elenco_scadenze(token: str) -> list:
         ),
         "order": "quando.asc.nullslast",
     }
+    if persona_id:
+        params["persona_id"] = f"eq.{persona_id}"
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(

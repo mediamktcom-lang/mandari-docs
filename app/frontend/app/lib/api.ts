@@ -95,6 +95,13 @@ export type ScadenzaRow = {
   atti?: AttoBreve | AttoBreve[] | null;
 };
 
+export type Persona = {
+  id: string;
+  nome: string;
+  relazione: string;
+  is_self: boolean;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // Intestazione di autenticazione (token della sessione), se disponibile.
@@ -115,14 +122,40 @@ export async function analizza(profilo: Profilo): Promise<Analisi> {
   return risposta.json();
 }
 
+export async function getPersone(): Promise<Persona[]> {
+  const risposta = await fetch(`${API_URL}/api/persone`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) return [];
+  const dati = await risposta.json();
+  return dati.persone ?? [];
+}
+
+export async function creaPersona(
+  nome: string,
+  relazione: string
+): Promise<{ id?: string; errore?: string; serve_pro?: boolean }> {
+  const modulo = new FormData();
+  modulo.append("nome", nome);
+  modulo.append("relazione", relazione);
+  const risposta = await fetch(`${API_URL}/api/persone`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
+  return risposta.json();
+}
+
 export async function chiediAssistente(
   messaggio: string,
   profilo: Profilo | null,
-  file: File | null
+  file: File | null,
+  personaId: string | null = null
 ): Promise<RispostaAssistente> {
   const modulo = new FormData();
   modulo.append("messaggio", messaggio);
   if (profilo) modulo.append("profilo", JSON.stringify(profilo));
+  if (personaId) modulo.append("persona", personaId);
   if (file) modulo.append("file", file);
 
   const risposta = await fetch(`${API_URL}/api/assistant`, {
@@ -163,8 +196,12 @@ export async function getSpazio(): Promise<{ usato: number; quota: number }> {
   return risposta.json();
 }
 
-export async function elencoScadenze(): Promise<ScadenzaRow[]> {
-  const risposta = await fetch(`${API_URL}/api/scadenze`, {
+export async function elencoScadenze(
+  personaId: string | null = null
+): Promise<ScadenzaRow[]> {
+  const url = new URL(`${API_URL}/api/scadenze`);
+  if (personaId) url.searchParams.set("persona", personaId);
+  const risposta = await fetch(url, {
     headers: { ...(await authHeader()) },
   });
   if (!risposta.ok) {

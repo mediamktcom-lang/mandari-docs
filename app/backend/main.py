@@ -18,11 +18,14 @@ from carta import spiega_documento
 from fascicolo import (
     QUOTA_BYTE,
     crea_atto,
+    crea_persona,
     crea_scadenze,
     elenco_atti,
+    elenco_persone,
     elenco_scadenze,
     estrai_token,
     leggi_piano,
+    persona_self,
     recupera_contesto,
     salva_allegato,
     salva_profilo,
@@ -98,6 +101,35 @@ async def account(authorization: str | None = Header(default=None)) -> dict:
     return {"piano": piano}
 
 
+@app.get("/api/persone")
+async def persone(authorization: str | None = Header(default=None)) -> dict:
+    """Elenco delle persone gestite (crea 'sé stesso' se manca)."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"persone": []}
+    await persona_self(token)
+    return {"persone": await elenco_persone(token)}
+
+
+@app.post("/api/persone")
+async def aggiungi_persona(
+    nome: str = Form(...),
+    relazione: str = Form(""),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """Aggiunge un profilo (una persona di cui l'utente si occupa). Richiede piano Pro."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"errore": "Devi avere una sessione attiva."}
+    if await leggi_piano(token) != "pro":
+        return {
+            "errore": "Aggiungere profili è una funzione del piano Pro.",
+            "serve_pro": True,
+        }
+    pid = await crea_persona(token, nome.strip() or "Persona", relazione.strip())
+    return {"id": pid} if pid else {"errore": "Impossibile creare il profilo."}
+
+
 @app.get("/api/spazio")
 async def spazio(authorization: str | None = Header(default=None)) -> dict:
     """Spazio usato dagli allegati e quota inclusa (in byte)."""
@@ -107,12 +139,15 @@ async def spazio(authorization: str | None = Header(default=None)) -> dict:
 
 
 @app.get("/api/scadenze")
-async def scadenze(authorization: str | None = Header(default=None)) -> dict:
-    """Restituisce le scadenze del Fascicolo (motore DATA)."""
+async def scadenze(
+    persona: str = "", authorization: str | None = Header(default=None)
+) -> dict:
+    """Restituisce le scadenze del Fascicolo (motore DATA) per la persona attiva."""
     token = estrai_token(authorization)
     if not token:
         return {"scadenze": []}
-    return {"scadenze": await elenco_scadenze(token)}
+    pid = persona or await persona_self(token)
+    return {"scadenze": await elenco_scadenze(token, pid)}
 
 
 @app.post("/api/carta")
@@ -126,6 +161,7 @@ async def carta(file: UploadFile = File(...)) -> dict:
 async def assistant(
     messaggio: str = Form(""),
     profilo: str = Form(""),
+    persona: str = Form(""),
     file: UploadFile | None = File(None),
     authorization: str | None = Header(default=None),
 ) -> dict:
@@ -138,7 +174,11 @@ async def assistant(
         prof = None
 
     token = estrai_token(authorization)
-    contesto = await recupera_contesto(token) if token else ""
+    persona_id = None
+    contesto = ""
+    if token:
+        persona_id = persona or await persona_self(token)
+        contesto = await recupera_contesto(token, persona_id)
 
     risposta = rispondi(messaggio, dati, mime, prof, contesto)
 
@@ -161,7 +201,7 @@ async def assistant(
 
     if token:
         await _persisti_interazione(
-            token, messaggio, risposta, allegato_url, dimensione
+            token, messaggio, risposta, allegato_url, dimensione, persona_id
         )
     return risposta
 
@@ -172,6 +212,7 @@ async def _persisti_interazione(
     risposta: dict,
     allegato_url: str | None = None,
     dimensione: int = 0,
+    persona_id: str | None = None,
 ) -> None:
     """Crea l'Atto (e le eventuali scadenze) corrispondente all'interazione."""
     doc = risposta.get("documento")
@@ -195,9 +236,10 @@ async def _persisti_interazione(
                     [doc.get("tipo", ""), doc.get("riassunto", "")]
                 ),
                 "allegato_url": allegato_url,
+                "persona_id": persona_id,
             },
         )
-        await crea_scadenze(token, atto_id, doc.get("scadenze", []))
+        await crea_scadenze(token, atto_id, doc.get("scadenze", []), persona_id)
     elif opportunita:
         await crea_atto(
             token,
@@ -213,6 +255,7 @@ async def _persisti_interazione(
                 "testo_ricerca": " ".join(
                     [messaggio] + [o.get("titolo", "") for o in opportunita]
                 ),
+                "persona_id": persona_id,
             },
         )
     elif soluzioni:
@@ -230,6 +273,7 @@ async def _persisti_interazione(
                 "testo_ricerca": " ".join(
                     [messaggio] + [s.get("titolo", "") for s in soluzioni]
                 ),
+                "persona_id": persona_id,
             },
         )
     else:
@@ -245,5 +289,6 @@ async def _persisti_interazione(
                 },
                 "metadati": {"motore": motore},
                 "testo_ricerca": messaggio + " " + risposta.get("messaggio", ""),
+                "persona_id": persona_id,
             },
         )

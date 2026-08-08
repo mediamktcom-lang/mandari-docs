@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import {
   analizza,
   chiediAssistente,
+  creaPersona,
   elencoScadenze,
   getAccount,
+  getPersone,
   getSpazio,
   type Analisi,
   type AttoBreve,
   type Opportunita,
+  type Persona,
   type Profilo,
   type ScadenzaRow,
   type Soluzione,
@@ -53,14 +56,38 @@ export default function App() {
   const [vista, setVista] = useState<Vista>("home");
   const [profilo, setProfilo] = useState<Profilo | null>(null);
   const [menuAperto, setMenuAperto] = useState(false);
+  const [persone, setPersone] = useState<Persona[]>([]);
+  const [personaId, setPersonaId] = useState<string>("");
+
+  const ricaricaPersone = async (impostaAttiva = false) => {
+    const ps = await getPersone();
+    setPersone(ps);
+    if (impostaAttiva || !ps.find((p) => p.id === personaId)) {
+      const self = ps.find((p) => p.is_self) ?? ps[0];
+      if (self) setPersonaId(self.id);
+    }
+  };
 
   useEffect(() => {
-    assicuraSessione();
+    (async () => {
+      await assicuraSessione();
+      await ricaricaPersone(true);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (vista === "home") {
     return <Cover onInizia={() => setVista(profilo ? "chat" : "onboarding")} />;
   }
+
+  const selettore = persone.length > 1 && (
+    <SelettorePersona
+      persone={persone}
+      personaId={personaId}
+      onCambia={setPersonaId}
+      onGestisci={() => setVista("impostazioni")}
+    />
+  );
 
   return (
     <main className="min-h-screen bg-white text-slate-900">
@@ -82,9 +109,26 @@ export default function App() {
               }}
             />
           )}
-          {vista === "chat" && <Assistente profilo={profilo} />}
-          {vista === "calendario" && <CalendarioAmministrativo />}
-          {vista === "impostazioni" && <Impostazioni />}
+          {vista === "chat" && (
+            <>
+              {selettore}
+              <Assistente profilo={profilo} personaId={personaId} />
+            </>
+          )}
+          {vista === "calendario" && (
+            <>
+              {selettore}
+              <CalendarioAmministrativo personaId={personaId} />
+            </>
+          )}
+          {vista === "impostazioni" && (
+            <Impostazioni
+              persone={persone}
+              personaId={personaId}
+              onCambiaPersona={setPersonaId}
+              onRicarica={ricaricaPersone}
+            />
+          )}
         </div>
       </div>
 
@@ -97,6 +141,60 @@ export default function App() {
         }}
       />
     </main>
+  );
+}
+
+function SelettorePersona({
+  persone,
+  personaId,
+  onCambia,
+  onGestisci,
+}: {
+  persone: Persona[];
+  personaId: string;
+  onCambia: (id: string) => void;
+  onGestisci: () => void;
+}) {
+  const [aperto, setAperto] = useState(false);
+  const attiva = persone.find((p) => p.id === personaId) ?? persone[0];
+  return (
+    <div className="relative mb-4">
+      <button
+        onClick={() => setAperto(!aperto)}
+        className="btn-ghost flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm"
+      >
+        <span className="text-slate-500">Stai gestendo:</span>
+        <span className="font-semibold text-slate-900">{attiva?.nome}</span>
+        <span className="text-slate-400">▾</span>
+      </button>
+      {aperto && (
+        <div className="absolute z-10 mt-1 w-60 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+          {persone.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => {
+                onCambia(p.id);
+                setAperto(false);
+              }}
+              className="btn-ghost block w-full rounded-md px-3 py-2 text-left text-sm"
+            >
+              {p.nome}
+              {p.relazione ? ` · ${p.relazione}` : ""}
+              {p.is_self ? " (tu)" : ""}
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              setAperto(false);
+              onGestisci();
+            }}
+            className="btn-ghost block w-full rounded-md px-3 py-2 text-left text-sm text-brand"
+          >
+            + Gestisci profili
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -328,7 +426,17 @@ function VoceMenu({
 
 /* ----------------------------- Impostazioni -------------------------- */
 
-function Impostazioni() {
+function Impostazioni({
+  persone,
+  personaId,
+  onCambiaPersona,
+  onRicarica,
+}: {
+  persone: Persona[];
+  personaId: string;
+  onCambiaPersona: (id: string) => void;
+  onRicarica: () => Promise<void>;
+}) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-slate-900">Impostazioni</h2>
@@ -342,14 +450,14 @@ function Impostazioni() {
 
       <SezioneImp
         titolo="Profili gestiti"
-        descrizione="Gestisci le persone del tuo nucleo e aggiungi il profilo di qualcuno di cui ti occupi (es. un genitore) che non fa parte del tuo nucleo: ognuno con il proprio Fascicolo."
+        descrizione="Oltre a te, puoi aggiungere il profilo di qualcuno di cui ti occupi (es. un genitore): ognuno con il proprio Fascicolo separato."
       >
-        <button className="btn-ghost rounded-lg px-3 py-2 text-sm font-semibold">
-          + Aggiungi un profilo
-        </button>
-        <p className="mt-2 text-xs text-slate-400">
-          Presto: nucleo amministrativo e profili aggiunti (slot dedicati).
-        </p>
+        <ProfiliGestiti
+          persone={persone}
+          personaId={personaId}
+          onCambiaPersona={onCambiaPersona}
+          onRicarica={onRicarica}
+        />
       </SezioneImp>
 
       <SezioneImp
@@ -379,6 +487,116 @@ function Impostazioni() {
         </ul>
         <p className="mt-2 text-xs text-slate-400">Presto disponibili.</p>
       </SezioneImp>
+    </div>
+  );
+}
+
+function ProfiliGestiti({
+  persone,
+  personaId,
+  onCambiaPersona,
+  onRicarica,
+}: {
+  persone: Persona[];
+  personaId: string;
+  onCambiaPersona: (id: string) => void;
+  onRicarica: () => Promise<void>;
+}) {
+  const [nome, setNome] = useState("");
+  const [relazione, setRelazione] = useState("");
+  const [modo, setModo] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [carica, setCarica] = useState(false);
+
+  async function aggiungi() {
+    if (!nome.trim()) return;
+    setCarica(true);
+    setMsg(null);
+    const r = await creaPersona(nome.trim(), relazione.trim());
+    setCarica(false);
+    if (r.errore) {
+      setMsg(
+        r.serve_pro
+          ? "Aggiungere profili è una funzione del piano Pro. Chiedi l'attivazione."
+          : r.errore
+      );
+      return;
+    }
+    setNome("");
+    setRelazione("");
+    setModo(false);
+    await onRicarica();
+  }
+
+  return (
+    <div>
+      <div className="space-y-1">
+        {persone.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => onCambiaPersona(p.id)}
+            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
+              p.id === personaId ? "bg-[#fff1e9]" : "hover:bg-slate-50"
+            }`}
+          >
+            <span className="font-medium text-slate-800">
+              {p.nome}
+              {p.relazione ? ` · ${p.relazione}` : ""}
+              {p.is_self ? " (tu)" : ""}
+            </span>
+            {p.id === personaId && (
+              <span className="text-xs font-semibold text-brand">attivo</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {!modo && (
+        <button
+          onClick={() => {
+            setModo(true);
+            setMsg(null);
+          }}
+          className="btn-ghost mt-2 rounded-lg px-3 py-2 text-sm font-semibold"
+        >
+          + Aggiungi un profilo
+        </button>
+      )}
+      {modo && (
+        <div className="mt-2 space-y-2">
+          <input
+            className="input"
+            placeholder="Nome (es. Maria)"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+          />
+          <input
+            className="input"
+            placeholder="Relazione (es. madre)"
+            value={relazione}
+            onChange={(e) => setRelazione(e.target.value)}
+          />
+          <div className="flex gap-2">
+            <button
+              disabled={carica}
+              onClick={aggiungi}
+              className="btn-brand rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-60"
+            >
+              {carica ? "Attendi…" : "Aggiungi"}
+            </button>
+            <button
+              onClick={() => {
+                setModo(false);
+                setMsg(null);
+              }}
+              className="btn-ghost rounded-lg px-3 py-2 text-sm font-semibold"
+            >
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
+      {msg && <p className="mt-2 text-xs text-amber-700">{msg}</p>}
     </div>
   );
 }
@@ -820,7 +1038,13 @@ type Messaggio = {
   avviso?: string;
 };
 
-function Assistente({ profilo }: { profilo: Profilo | null }) {
+function Assistente({
+  profilo,
+  personaId,
+}: {
+  profilo: Profilo | null;
+  personaId: string;
+}) {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([
     {
       ruolo: "mandari",
@@ -850,7 +1074,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
     setCaricamento(true);
 
     try {
-      const r = await chiediAssistente(msg, profilo, doc);
+      const r = await chiediAssistente(msg, profilo, doc, personaId);
       setMessaggi((m) => [
         ...m,
         {
@@ -1116,19 +1340,19 @@ function attoDi(s: ScadenzaRow): AttoBreve | null {
   return Array.isArray(s.atti) ? (s.atti[0] ?? null) : s.atti;
 }
 
-function CalendarioAmministrativo() {
+function CalendarioAmministrativo({ personaId }: { personaId: string }) {
   const [righe, setRighe] = useState<ScadenzaRow[] | null>(null);
   const [aperto, setAperto] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        setRighe(await elencoScadenze());
+        setRighe(await elencoScadenze(personaId));
       } catch {
         setRighe([]);
       }
     })();
-  }, []);
+  }, [personaId]);
 
   return (
     <div className="space-y-4">
