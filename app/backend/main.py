@@ -16,13 +16,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from carta import spiega_documento
 from fascicolo import (
+    QUOTA_BYTE,
     crea_atto,
     crea_scadenze,
     elenco_atti,
     elenco_scadenze,
     estrai_token,
     recupera_contesto,
+    salva_allegato,
     salva_profilo,
+    spazio_usato,
+    user_id_da_token,
 )
 from orchestratore import rispondi
 from spetta import Profilo, genera_analisi
@@ -85,6 +89,14 @@ async def fascicolo(
     return {"atti": await elenco_atti(token, q or None)}
 
 
+@app.get("/api/spazio")
+async def spazio(authorization: str | None = Header(default=None)) -> dict:
+    """Spazio usato dagli allegati e quota inclusa (in byte)."""
+    token = estrai_token(authorization)
+    usato = await spazio_usato(token) if token else 0
+    return {"usato": usato, "quota": QUOTA_BYTE}
+
+
 @app.get("/api/scadenze")
 async def scadenze(authorization: str | None = Header(default=None)) -> dict:
     """Restituisce le scadenze del Fascicolo (motore DATA)."""
@@ -121,12 +133,37 @@ async def assistant(
 
     risposta = rispondi(messaggio, dati, mime, prof, contesto)
 
+    # Storage del file originale (con quota 500 MB per utente)
+    allegato_url = None
+    dimensione = 0
+    if token and dati and risposta.get("documento"):
+        dimensione = len(dati)
+        user_id = user_id_da_token(token)
+        usato = await spazio_usato(token)
+        if user_id and usato + dimensione <= QUOTA_BYTE:
+            allegato_url = await salva_allegato(token, user_id, dati, mime)
+        elif usato + dimensione > QUOTA_BYTE:
+            risposta["messaggio"] = risposta.get("messaggio", "") + (
+                "\n\n(Hai superato i 500 MB di spazio incluso: ho salvato la "
+                "spiegazione ma non il file originale. Per conservare gli originali "
+                "oltre questo limite, collega il tuo spazio personale dalle "
+                "Impostazioni.)"
+            )
+
     if token:
-        await _persisti_interazione(token, messaggio, risposta)
+        await _persisti_interazione(
+            token, messaggio, risposta, allegato_url, dimensione
+        )
     return risposta
 
 
-async def _persisti_interazione(token: str, messaggio: str, risposta: dict) -> None:
+async def _persisti_interazione(
+    token: str,
+    messaggio: str,
+    risposta: dict,
+    allegato_url: str | None = None,
+    dimensione: int = 0,
+) -> None:
     """Crea l'Atto (e le eventuali scadenze) corrispondente all'interazione."""
     doc = risposta.get("documento")
     opportunita = risposta.get("opportunita") or []
@@ -141,10 +178,14 @@ async def _persisti_interazione(token: str, messaggio: str, risposta: dict) -> N
                 "titolo": doc.get("tipo") or "Documento",
                 "origine": "CARTA",
                 "contenuto": doc,
-                "metadati": {"attendibilita": doc.get("attendibilita", "")},
+                "metadati": {
+                    "attendibilita": doc.get("attendibilita", ""),
+                    "dimensione": dimensione,
+                },
                 "testo_ricerca": " ".join(
                     [doc.get("tipo", ""), doc.get("riassunto", "")]
                 ),
+                "allegato_url": allegato_url,
             },
         )
         await crea_scadenze(token, atto_id, doc.get("scadenze", []))

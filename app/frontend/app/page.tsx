@@ -5,6 +5,7 @@ import {
   analizza,
   chiediAssistente,
   elencoScadenze,
+  getSpazio,
   type Analisi,
   type AttoBreve,
   type Opportunita,
@@ -345,6 +346,7 @@ function Impostazioni() {
           <span className="text-slate-600">Piano attuale</span>
           <span className="font-semibold text-brand">Free</span>
         </div>
+        <SpazioUsato />
         <p className="mt-2 text-xs text-slate-400">
           Presto: passaggio al piano completo e metodi di pagamento.
         </p>
@@ -363,6 +365,40 @@ function Impostazioni() {
         </ul>
         <p className="mt-2 text-xs text-slate-400">Presto disponibili.</p>
       </SezioneImp>
+    </div>
+  );
+}
+
+function SpazioUsato() {
+  const [dati, setDati] = useState<{ usato: number; quota: number } | null>(
+    null
+  );
+
+  useEffect(() => {
+    (async () => setDati(await getSpazio()))();
+  }, []);
+
+  if (!dati || !dati.quota) return null;
+  const mb = (b: number) => b / 1024 / 1024;
+  const perc = Math.min(100, Math.round((dati.usato / dati.quota) * 100));
+
+  return (
+    <div className="mt-3">
+      <div className="mb-1 flex justify-between text-xs text-slate-500">
+        <span>Spazio documenti su Mandari</span>
+        <span>
+          {mb(dati.usato).toFixed(1)} / {Math.round(mb(dati.quota))} MB
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div
+          className="h-full rounded-full bg-[#f2560a]"
+          style={{ width: `${perc}%` }}
+        />
+      </div>
+      <p className="mt-1 text-xs text-slate-400">
+        Oltre i 500 MB potrai collegare il tuo spazio personale.
+      </p>
     </div>
   );
 }

@@ -12,10 +12,27 @@ risposta all'utente.
 
 from __future__ import annotations
 
+import base64
+import json
 import os
 import re
+import uuid
 
 import httpx
+
+# Spazio incluso per utente su Mandari (oltre, si passa allo storage dell'utente).
+QUOTA_BYTE = 500 * 1024 * 1024  # 500 MB
+
+
+def user_id_da_token(token: str) -> str | None:
+    """Estrae l'id utente (sub) dal token, solo per costruire il percorso file."""
+    try:
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        dati = json.loads(base64.urlsafe_b64decode(payload))
+        return dati.get("sub")
+    except Exception:
+        return None
 
 
 def _parse_data(testo: str | None) -> str | None:
@@ -155,6 +172,42 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
     except Exception:
         pass
     return []
+
+
+async def spazio_usato(token: str) -> int:
+    """Somma le dimensioni degli allegati già conservati su Mandari (in byte)."""
+    atti = await elenco_atti(token)
+    tot = 0
+    for a in atti:
+        if a.get("tipo") == "documento":
+            m = a.get("metadati") or {}
+            try:
+                tot += int(m.get("dimensione", 0) or 0)
+            except (TypeError, ValueError):
+                pass
+    return tot
+
+
+async def salva_allegato(
+    token: str, user_id: str, dati: bytes, mime: str | None
+) -> str | None:
+    """Carica il file originale nello storage di Mandari. Restituisce il percorso."""
+    path = f"{user_id}/{uuid.uuid4().hex}"
+    url = f"{_base()}/storage/v1/object/documenti/{path}"
+    headers = {
+        "apikey": os.getenv("SUPABASE_ANON_KEY", ""),
+        "Authorization": f"Bearer {token}",
+        "Content-Type": mime or "application/octet-stream",
+        "x-upsert": "false",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.post(url, headers=headers, content=dati)
+            if r.status_code < 300:
+                return f"documenti/{path}"
+    except Exception:
+        pass
+    return None
 
 
 async def recupera_contesto(token: str) -> str:
