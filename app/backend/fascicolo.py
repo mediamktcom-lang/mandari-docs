@@ -340,18 +340,49 @@ async def _cerca_simili(
 
 async def recupera_contesto(
     token: str, persona_id: str | None = None, messaggio: str = ""
-) -> str:
-    """Contesto per Anya: prima ricerca semantica, poi ripiego sugli Atti recenti."""
+) -> tuple[str, list]:
+    """Contesto per Anya (testo, fonti). Prima ricerca semantica, poi recenti."""
     from intelligenza import calcola_embedding
 
     emb = calcola_embedding(messaggio) if messaggio else None
+    atti: list = []
     if emb:
-        simili = await _cerca_simili(token, emb, persona_id)
-        if simili:
-            return _riepiloga_atti(simili)
+        atti = await _cerca_simili(token, emb, persona_id)
+    if not atti:
+        recenti = await elenco_atti(token, persona_id=persona_id)
+        atti = recenti[:8]
 
-    atti = await elenco_atti(token, persona_id=persona_id)
-    return _riepiloga_atti(atti[:8])
+    fonti = [a.get("id") for a in atti if a.get("id")]
+    return _riepiloga_atti(atti), fonti
+
+
+async def registra_audit(token: str, azione: str, dettaglio: dict | None = None) -> None:
+    """Registra un'operazione nell'audit log (best-effort)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.post(
+                f"{_base()}/rest/v1/audit_log",
+                headers=_headers(token, "return=minimal"),
+                json={"azione": azione, "dettaglio": dettaglio or {}},
+            )
+    except Exception:
+        pass
+
+
+async def elenco_audit(token: str, limite: int = 20) -> list:
+    """Restituisce le ultime operazioni registrate."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/audit_log?select=azione,dettaglio,created_at"
+                f"&order=created_at.desc&limit={limite}",
+                headers=_get_headers(token),
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
 
 
 async def elenco_scadenze(token: str, persona_id: str | None = None) -> list:

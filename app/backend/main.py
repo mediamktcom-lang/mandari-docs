@@ -21,12 +21,14 @@ from fascicolo import (
     crea_persona,
     crea_scadenze,
     elenco_atti,
+    elenco_audit,
     elenco_persone,
     elenco_scadenze,
     estrai_token,
     leggi_piano,
     persona_self,
     recupera_contesto,
+    registra_audit,
     salva_allegato,
     salva_profilo,
     spazio_usato,
@@ -127,7 +129,21 @@ async def aggiungi_persona(
             "serve_pro": True,
         }
     pid = await crea_persona(token, nome.strip() or "Persona", relazione.strip())
-    return {"id": pid} if pid else {"errore": "Impossibile creare il profilo."}
+    if pid:
+        await registra_audit(
+            token, "profilo_aggiunto", {"nome": nome.strip(), "relazione": relazione.strip()}
+        )
+        return {"id": pid}
+    return {"errore": "Impossibile creare il profilo."}
+
+
+@app.get("/api/audit")
+async def audit(authorization: str | None = Header(default=None)) -> dict:
+    """Registro delle attività recenti dell'utente."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"attivita": []}
+    return {"attivita": await elenco_audit(token)}
 
 
 @app.get("/api/spazio")
@@ -176,9 +192,10 @@ async def assistant(
     token = estrai_token(authorization)
     persona_id = None
     contesto = ""
+    fonti: list = []
     if token:
         persona_id = persona or await persona_self(token)
-        contesto = await recupera_contesto(token, persona_id, messaggio)
+        contesto, fonti = await recupera_contesto(token, persona_id, messaggio)
 
     risposta = rispondi(messaggio, dati, mime, prof, contesto)
 
@@ -201,9 +218,28 @@ async def assistant(
 
     if token:
         await _persisti_interazione(
-            token, messaggio, risposta, allegato_url, dimensione, persona_id
+            token, messaggio, risposta, allegato_url, dimensione, persona_id, fonti
+        )
+        await registra_audit(
+            token,
+            _azione_da(risposta),
+            {
+                "motore": risposta.get("motore", ""),
+                "persona": persona_id,
+                "fonti_usate": len(fonti),
+            },
         )
     return risposta
+
+
+def _azione_da(risposta: dict) -> str:
+    if risposta.get("documento"):
+        return "documento_caricato"
+    if risposta.get("opportunita"):
+        return "analisi_diritti"
+    if risposta.get("soluzioni"):
+        return "ricerca_soluzioni"
+    return "richiesta"
 
 
 async def _persisti_interazione(
@@ -213,8 +249,10 @@ async def _persisti_interazione(
     allegato_url: str | None = None,
     dimensione: int = 0,
     persona_id: str | None = None,
+    fonti: list | None = None,
 ) -> None:
     """Crea l'Atto (e le eventuali scadenze) corrispondente all'interazione."""
+    fonti = fonti or []
     doc = risposta.get("documento")
     opportunita = risposta.get("opportunita") or []
     soluzioni = risposta.get("soluzioni") or []
@@ -231,6 +269,7 @@ async def _persisti_interazione(
                 "metadati": {
                     "attendibilita": doc.get("attendibilita", ""),
                     "dimensione": dimensione,
+                    "fonti": fonti,
                 },
                 "testo_ricerca": " ".join(
                     [doc.get("tipo", ""), doc.get("riassunto", "")]
@@ -251,7 +290,7 @@ async def _persisti_interazione(
                     "messaggio": risposta.get("messaggio", ""),
                     "opportunita": opportunita,
                 },
-                "metadati": {"n_opportunita": len(opportunita)},
+                "metadati": {"n_opportunita": len(opportunita), "fonti": fonti},
                 "testo_ricerca": " ".join(
                     [messaggio] + [o.get("titolo", "") for o in opportunita]
                 ),
@@ -269,7 +308,7 @@ async def _persisti_interazione(
                     "messaggio": risposta.get("messaggio", ""),
                     "soluzioni": soluzioni,
                 },
-                "metadati": {"n_soluzioni": len(soluzioni)},
+                "metadati": {"n_soluzioni": len(soluzioni), "fonti": fonti},
                 "testo_ricerca": " ".join(
                     [messaggio] + [s.get("titolo", "") for s in soluzioni]
                 ),
@@ -287,7 +326,7 @@ async def _persisti_interazione(
                     "domanda": messaggio,
                     "risposta": risposta.get("messaggio", ""),
                 },
-                "metadati": {"motore": motore},
+                "metadati": {"motore": motore, "fonti": fonti},
                 "testo_ricerca": messaggio + " " + risposta.get("messaggio", ""),
                 "persona_id": persona_id,
             },

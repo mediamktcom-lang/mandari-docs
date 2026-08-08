@@ -180,6 +180,21 @@ export async function elencoAtti(q = ""): Promise<Atto[]> {
   return dati.atti ?? [];
 }
 
+export type VoceAudit = {
+  azione: string;
+  dettaglio: Record<string, unknown>;
+  created_at: string;
+};
+
+export async function getAudit(): Promise<VoceAudit[]> {
+  const risposta = await fetch(`${API_URL}/api/audit`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) return [];
+  const dati = await risposta.json();
+  return dati.attivita ?? [];
+}
+
 export async function getAccount(): Promise<{ piano: string }> {
   const risposta = await fetch(`${API_URL}/api/account`, {
     headers: { ...(await authHeader()) },

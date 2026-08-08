@@ -7,8 +7,10 @@ import {
   creaPersona,
   elencoScadenze,
   getAccount,
+  getAudit,
   getPersone,
   getSpazio,
+  type VoceAudit,
   type Analisi,
   type AttoBreve,
   type Opportunita,
@@ -487,7 +489,50 @@ function Impostazioni({
         </ul>
         <p className="mt-2 text-xs text-slate-400">Presto disponibili.</p>
       </SezioneImp>
+
+      <SezioneImp
+        titolo="Attività recenti"
+        descrizione="Le ultime operazioni registrate sul tuo Fascicolo (tracciabilità)."
+      >
+        <AttivitaRecenti />
+      </SezioneImp>
     </div>
+  );
+}
+
+const ETICHETTE_AZIONE: Record<string, string> = {
+  richiesta: "Richiesta all'assistente",
+  analisi_diritti: "Analisi diritti (SPETTA)",
+  documento_caricato: "Documento caricato (CARTA)",
+  ricerca_soluzioni: "Ricerca soluzioni (AFFIDO)",
+  profilo_aggiunto: "Profilo aggiunto",
+};
+
+function AttivitaRecenti() {
+  const [voci, setVoci] = useState<VoceAudit[] | null>(null);
+  useEffect(() => {
+    (async () => setVoci(await getAudit()))();
+  }, []);
+
+  if (voci === null) return <p className="text-xs text-slate-400">Carico…</p>;
+  if (voci.length === 0)
+    return (
+      <p className="text-sm text-slate-500">Nessuna attività registrata.</p>
+    );
+
+  return (
+    <ul className="divide-y divide-slate-100 text-sm">
+      {voci.map((v, i) => (
+        <li key={i} className="flex items-center justify-between py-2">
+          <span className="text-slate-700">
+            {ETICHETTE_AZIONE[v.azione] ?? v.azione}
+          </span>
+          <span className="text-xs text-slate-400">
+            {new Date(v.created_at).toLocaleDateString("it-IT")}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
