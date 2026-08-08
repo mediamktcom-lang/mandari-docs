@@ -249,6 +249,53 @@ async def persona_self(token: str) -> str | None:
     return pid
 
 
+async def crea_delega(token: str, email: str) -> str | None:
+    """Autorizza (per email) un'altra persona a consultare il proprio Fascicolo."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"{_base()}/rest/v1/deleghe",
+                headers=_headers(token, "return=representation"),
+                json={"delegato_email": email},
+            )
+            if r.status_code < 300:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    return d[0].get("id")
+    except Exception:
+        pass
+    return None
+
+
+async def elenco_deleghe(token: str) -> list:
+    """Le deleghe concesse dall'utente."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/deleghe?select=id,delegato_email,stato,created_at"
+                f"&order=created_at.desc",
+                headers=_get_headers(token),
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
+
+
+async def revoca_delega(token: str, delega_id: str) -> None:
+    """Revoca una delega (effetto immediato)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.patch(
+                f"{_base()}/rest/v1/deleghe?id=eq.{delega_id}",
+                headers=_headers(token, "return=minimal"),
+                json={"stato": "revocata"},
+            )
+    except Exception:
+        pass
+
+
 async def leggi_piano(token: str) -> str:
     """Restituisce il piano dell'utente ('free' o 'pro')."""
     try:

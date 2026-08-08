@@ -180,6 +180,45 @@ export async function elencoAtti(q = ""): Promise<Atto[]> {
   return dati.atti ?? [];
 }
 
+export type Delega = {
+  id: string;
+  delegato_email: string;
+  stato: string;
+  created_at: string;
+};
+
+export async function getDeleghe(): Promise<Delega[]> {
+  const risposta = await fetch(`${API_URL}/api/deleghe`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) return [];
+  const dati = await risposta.json();
+  return dati.deleghe ?? [];
+}
+
+export async function creaDelega(
+  email: string
+): Promise<{ id?: string; errore?: string }> {
+  const modulo = new FormData();
+  modulo.append("email", email);
+  const risposta = await fetch(`${API_URL}/api/deleghe`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
+  return risposta.json();
+}
+
+export async function revocaDelega(id: string): Promise<void> {
+  const modulo = new FormData();
+  modulo.append("id", id);
+  await fetch(`${API_URL}/api/deleghe/revoca`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
+}
+
 export type VoceAudit = {
   azione: string;
   dettaglio: Record<string, unknown>;

@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import {
   analizza,
   chiediAssistente,
+  creaDelega,
   creaPersona,
   elencoScadenze,
+  getDeleghe,
+  revocaDelega,
+  type Delega,
   getAccount,
   getAudit,
   getPersone,
@@ -463,6 +467,13 @@ function Impostazioni({
       </SezioneImp>
 
       <SezioneImp
+        titolo="Deleghe"
+        descrizione="Autorizza una persona (per email) a consultare il tuo Fascicolo in sola lettura. Puoi revocare in qualsiasi momento."
+      >
+        <Deleghe />
+      </SezioneImp>
+
+      <SezioneImp
         titolo="Abbonamento e pagamenti"
         descrizione="Il tuo piano e lo stato dei pagamenti."
       >
@@ -496,6 +507,82 @@ function Impostazioni({
       >
         <AttivitaRecenti />
       </SezioneImp>
+    </div>
+  );
+}
+
+function Deleghe() {
+  const [lista, setLista] = useState<Delega[] | null>(null);
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [carica, setCarica] = useState(false);
+
+  async function ricarica() {
+    setLista(await getDeleghe());
+  }
+  useEffect(() => {
+    ricarica();
+  }, []);
+
+  async function invita() {
+    if (!email.trim()) return;
+    setCarica(true);
+    setMsg(null);
+    const r = await creaDelega(email.trim());
+    setCarica(false);
+    if (r.errore) {
+      setMsg(r.errore);
+      return;
+    }
+    setEmail("");
+    await ricarica();
+  }
+
+  async function revoca(id: string) {
+    await revocaDelega(id);
+    await ricarica();
+  }
+
+  const attive = (lista ?? []).filter((d) => d.stato === "attiva");
+
+  return (
+    <div>
+      {attive.length > 0 && (
+        <ul className="mb-3 divide-y divide-slate-100 text-sm">
+          {attive.map((d) => (
+            <li key={d.id} className="flex items-center justify-between py-2">
+              <span className="text-slate-700">{d.delegato_email}</span>
+              <button
+                onClick={() => revoca(d.id)}
+                className="btn-ghost rounded-lg px-2 py-1 text-xs font-semibold"
+              >
+                Revoca
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <input
+          className="input"
+          type="email"
+          placeholder="Email della persona da autorizzare"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <button
+          disabled={carica}
+          onClick={invita}
+          className="btn-brand shrink-0 rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-60"
+        >
+          {carica ? "…" : "Autorizza"}
+        </button>
+      </div>
+      {msg && <p className="mt-2 text-xs text-amber-700">{msg}</p>}
+      <p className="mt-2 text-xs text-slate-400">
+        La persona autorizzata potrà consultare (sola lettura) il tuo Fascicolo
+        dopo aver effettuato l&apos;accesso con quell&apos;email.
+      </p>
     </div>
   );
 }

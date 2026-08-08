@@ -18,8 +18,10 @@ from carta import spiega_documento
 from fascicolo import (
     QUOTA_BYTE,
     crea_atto,
+    crea_delega,
     crea_persona,
     crea_scadenze,
+    elenco_deleghe,
     elenco_atti,
     elenco_audit,
     elenco_persone,
@@ -29,6 +31,7 @@ from fascicolo import (
     persona_self,
     recupera_contesto,
     registra_audit,
+    revoca_delega,
     salva_allegato,
     salva_profilo,
     spazio_usato,
@@ -135,6 +138,48 @@ async def aggiungi_persona(
         )
         return {"id": pid}
     return {"errore": "Impossibile creare il profilo."}
+
+
+@app.get("/api/deleghe")
+async def deleghe(authorization: str | None = Header(default=None)) -> dict:
+    """Elenco delle deleghe concesse dall'utente."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"deleghe": []}
+    return {"deleghe": await elenco_deleghe(token)}
+
+
+@app.post("/api/deleghe")
+async def aggiungi_delega(
+    email: str = Form(...),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """Autorizza una persona (per email) a consultare il proprio Fascicolo."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"errore": "Devi avere una sessione attiva."}
+    email = email.strip().lower()
+    if "@" not in email:
+        return {"errore": "Inserisci un'email valida."}
+    did = await crea_delega(token, email)
+    if did:
+        await registra_audit(token, "delega_creata", {"delegato": email})
+        return {"id": did}
+    return {"errore": "Impossibile creare la delega."}
+
+
+@app.post("/api/deleghe/revoca")
+async def revoca(
+    id: str = Form(...),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """Revoca una delega (effetto immediato)."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"errore": "Devi avere una sessione attiva."}
+    await revoca_delega(token, id)
+    await registra_audit(token, "delega_revocata", {"delega": id})
+    return {"ok": True}
 
 
 @app.get("/api/audit")
