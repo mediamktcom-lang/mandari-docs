@@ -147,6 +147,14 @@ export async function elencoAtti(q = ""): Promise<Atto[]> {
   return dati.atti ?? [];
 }
 
+export async function getAccount(): Promise<{ piano: string }> {
+  const risposta = await fetch(`${API_URL}/api/account`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) return { piano: "free" };
+  return risposta.json();
+}
+
 export async function getSpazio(): Promise<{ usato: number; quota: number }> {
   const risposta = await fetch(`${API_URL}/api/spazio`, {
     headers: { ...(await authHeader()) },

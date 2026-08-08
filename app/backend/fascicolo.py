@@ -174,6 +174,23 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
     return []
 
 
+async def leggi_piano(token: str) -> str:
+    """Restituisce il piano dell'utente ('free' o 'pro')."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/profili?select=piano&limit=1",
+                headers=_get_headers(token),
+            )
+            if r.status_code < 300:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    return d[0].get("piano") or "free"
+    except Exception:
+        pass
+    return "free"
+
+
 async def spazio_usato(token: str) -> int:
     """Somma le dimensioni degli allegati già conservati su Mandari (in byte)."""
     atti = await elenco_atti(token)

@@ -5,6 +5,7 @@ import {
   analizza,
   chiediAssistente,
   elencoScadenze,
+  getAccount,
   getSpazio,
   type Analisi,
   type AttoBreve,
@@ -14,7 +15,13 @@ import {
   type Soluzione,
   type SpiegazioneDoc,
 } from "./lib/api";
-import { assicuraSessione } from "./lib/supabase";
+import {
+  accedi,
+  assicuraSessione,
+  esci,
+  infoUtente,
+  registraEmail,
+} from "./lib/supabase";
 
 type Vista = "home" | "onboarding" | "chat" | "calendario" | "impostazioni";
 
@@ -327,6 +334,13 @@ function Impostazioni() {
       <h2 className="text-xl font-bold text-slate-900">Impostazioni</h2>
 
       <SezioneImp
+        titolo="Il tuo account"
+        descrizione="Crea un account per non perdere il tuo Fascicolo e accedere da altri dispositivi."
+      >
+        <AccountBox />
+      </SezioneImp>
+
+      <SezioneImp
         titolo="Profili gestiti"
         descrizione="Gestisci le persone del tuo nucleo e aggiungi il profilo di qualcuno di cui ti occupi (es. un genitore) che non fa parte del tuo nucleo: ognuno con il proprio Fascicolo."
       >
@@ -344,7 +358,7 @@ function Impostazioni() {
       >
         <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
           <span className="text-slate-600">Piano attuale</span>
-          <span className="font-semibold text-brand">Free</span>
+          <PianoBadge />
         </div>
         <SpazioUsato />
         <p className="mt-2 text-xs text-slate-400">
@@ -365,6 +379,147 @@ function Impostazioni() {
         </ul>
         <p className="mt-2 text-xs text-slate-400">Presto disponibili.</p>
       </SezioneImp>
+    </div>
+  );
+}
+
+function PianoBadge() {
+  const [piano, setPiano] = useState("free");
+  useEffect(() => {
+    (async () => setPiano((await getAccount()).piano))();
+  }, []);
+  return (
+    <span className="font-semibold text-brand">
+      {piano === "pro" ? "Pro" : "Free"}
+    </span>
+  );
+}
+
+function AccountBox() {
+  const [info, setInfo] = useState<{ email: string | null; anonimo: boolean } | null>(
+    null
+  );
+  const [modo, setModo] = useState<"none" | "registra" | "accedi">("none");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [carica, setCarica] = useState(false);
+
+  async function ricarica() {
+    setInfo(await infoUtente());
+  }
+  useEffect(() => {
+    ricarica();
+  }, []);
+
+  async function fai(azione: "registra" | "accedi") {
+    setCarica(true);
+    setMsg(null);
+    const err =
+      azione === "registra"
+        ? await registraEmail(email, password)
+        : await accedi(email, password);
+    setCarica(false);
+    if (err) {
+      setMsg(err);
+      return;
+    }
+    setMsg(
+      azione === "registra"
+        ? "Account creato. Se richiesto, conferma l'email dal messaggio ricevuto."
+        : "Accesso eseguito."
+    );
+    setModo("none");
+    setEmail("");
+    setPassword("");
+    await ricarica();
+  }
+
+  async function logout() {
+    await esci();
+    await ricarica();
+    setMsg("Sei uscito.");
+  }
+
+  if (!info) return null;
+
+  return (
+    <div>
+      {!info.anonimo && info.email ? (
+        <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
+          <span className="text-slate-700">{info.email}</span>
+          <button
+            onClick={logout}
+            className="btn-ghost rounded-lg px-2 py-1 text-sm font-semibold"
+          >
+            Esci
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-slate-600">
+            Stai usando Mandari senza account (dati salvati solo su questo
+            dispositivo).
+          </p>
+          {modo === "none" && (
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => setModo("registra")}
+                className="btn-brand rounded-lg px-3 py-2 text-sm font-semibold"
+              >
+                Crea account
+              </button>
+              <button
+                onClick={() => setModo("accedi")}
+                className="btn-ghost rounded-lg px-3 py-2 text-sm font-semibold"
+              >
+                Ho già un account
+              </button>
+            </div>
+          )}
+          {modo !== "none" && (
+            <div className="mt-3 space-y-2">
+              <input
+                className="input"
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="input"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  disabled={carica}
+                  onClick={() => fai(modo === "registra" ? "registra" : "accedi")}
+                  className="btn-brand rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                >
+                  {carica
+                    ? "Attendi…"
+                    : modo === "registra"
+                      ? "Crea account"
+                      : "Accedi"}
+                </button>
+                <button
+                  onClick={() => {
+                    setModo("none");
+                    setMsg(null);
+                  }}
+                  className="btn-ghost rounded-lg px-3 py-2 text-sm font-semibold"
+                >
+                  Annulla
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      {msg && <p className="mt-2 text-xs text-slate-500">{msg}</p>}
     </div>
   );
 }

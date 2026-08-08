@@ -22,6 +22,7 @@ from fascicolo import (
     elenco_atti,
     elenco_scadenze,
     estrai_token,
+    leggi_piano,
     recupera_contesto,
     salva_allegato,
     salva_profilo,
@@ -87,6 +88,14 @@ async def fascicolo(
     if not token:
         return {"atti": []}
     return {"atti": await elenco_atti(token, q or None)}
+
+
+@app.get("/api/account")
+async def account(authorization: str | None = Header(default=None)) -> dict:
+    """Informazioni account: piano (free/pro)."""
+    token = estrai_token(authorization)
+    piano = await leggi_piano(token) if token else "free"
+    return {"piano": piano}
 
 
 @app.get("/api/spazio")
