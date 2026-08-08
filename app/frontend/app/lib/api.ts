@@ -58,6 +58,25 @@ export type RispostaAssistente = {
   nota_tecnica?: string;
 };
 
+export type Atto = {
+  id: string;
+  tipo: string;
+  titolo: string;
+  origine: string;
+  created_at: string;
+  metadati: Record<string, unknown>;
+  contenuto: Record<string, unknown>;
+};
+
+export type ScadenzaRow = {
+  id: string;
+  cosa: string;
+  quando: string | null;
+  quando_testo: string;
+  stato: string;
+  created_at: string;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // Intestazione di autenticazione (token della sessione), se disponibile.
@@ -97,6 +116,28 @@ export async function chiediAssistente(
     throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
   }
   return risposta.json();
+}
+
+export async function elencoAtti(q = ""): Promise<Atto[]> {
+  const url = new URL(`${API_URL}/api/fascicolo`);
+  if (q) url.searchParams.set("q", q);
+  const risposta = await fetch(url, { headers: { ...(await authHeader()) } });
+  if (!risposta.ok) {
+    throw new Error(`Errore nel caricare l'archivio (${risposta.status}).`);
+  }
+  const dati = await risposta.json();
+  return dati.atti ?? [];
+}
+
+export async function elencoScadenze(): Promise<ScadenzaRow[]> {
+  const risposta = await fetch(`${API_URL}/api/scadenze`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) {
+    throw new Error(`Errore nel caricare le scadenze (${risposta.status}).`);
+  }
+  const dati = await risposta.json();
+  return dati.scadenze ?? [];
 }
 
 export async function spiegaDocumento(file: File): Promise<SpiegazioneDoc> {

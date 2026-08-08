@@ -15,7 +15,14 @@ from fastapi import FastAPI, File, Form, Header, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from carta import spiega_documento
-from fascicolo import crea_atto, crea_scadenze, estrai_token, salva_profilo
+from fascicolo import (
+    crea_atto,
+    crea_scadenze,
+    elenco_atti,
+    elenco_scadenze,
+    estrai_token,
+    salva_profilo,
+)
 from orchestratore import rispondi
 from spetta import Profilo, genera_analisi
 
@@ -64,6 +71,26 @@ async def analyze(
             },
         )
     return analisi
+
+
+@app.get("/api/fascicolo")
+async def fascicolo(
+    q: str = "", authorization: str | None = Header(default=None)
+) -> dict:
+    """Restituisce gli Atti del Fascicolo dell'utente (con ricerca opzionale)."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"atti": []}
+    return {"atti": await elenco_atti(token, q or None)}
+
+
+@app.get("/api/scadenze")
+async def scadenze(authorization: str | None = Header(default=None)) -> dict:
+    """Restituisce le scadenze del Fascicolo (motore DATA)."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"scadenze": []}
+    return {"scadenze": await elenco_scadenze(token)}
 
 
 @app.post("/api/carta")

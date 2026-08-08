@@ -52,6 +52,13 @@ def _headers(token: str, prefer: str) -> dict:
     }
 
 
+def _get_headers(token: str) -> dict:
+    return {
+        "apikey": os.getenv("SUPABASE_ANON_KEY", ""),
+        "Authorization": f"Bearer {token}",
+    }
+
+
 async def salva_profilo(token: str, profilo: dict) -> None:
     """Salva/aggiorna il profilo amministrativo dell'utente (una riga per utente)."""
     dati = {c: profilo.get(c) for c in _CAMPI_PROFILO if profilo.get(c) not in (None,)}
@@ -108,3 +115,43 @@ async def crea_scadenze(token: str, atto_id: str | None, scadenze: list) -> None
             )
     except Exception:
         pass
+
+
+async def elenco_atti(token: str, q: str | None = None) -> list:
+    """Restituisce gli Atti del Fascicolo (più recenti prima), con ricerca opzionale."""
+    params = {
+        "select": "id,tipo,titolo,origine,created_at,metadati,contenuto",
+        "order": "created_at.desc",
+    }
+    if q:
+        params["or"] = f"(titolo.ilike.*{q}*,testo_ricerca.ilike.*{q}*)"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/atti", headers=_get_headers(token), params=params
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
+
+
+async def elenco_scadenze(token: str) -> list:
+    """Restituisce le scadenze del Fascicolo (motore DATA)."""
+    params = {
+        "select": "id,cosa,quando,quando_testo,stato,created_at",
+        "order": "created_at.desc",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/scadenze",
+                headers=_get_headers(token),
+                params=params,
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []

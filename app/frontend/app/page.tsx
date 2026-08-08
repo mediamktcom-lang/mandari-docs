@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import {
   analizza,
   chiediAssistente,
+  elencoAtti,
+  elencoScadenze,
   type Analisi,
+  type Atto,
   type Opportunita,
   type Profilo,
+  type ScadenzaRow,
   type SpiegazioneDoc,
 } from "./lib/api";
 import { assicuraSessione } from "./lib/supabase";
 
-type Vista = "onboarding" | "assistente";
+type Vista = "onboarding" | "assistente" | "archivio" | "scadenze";
 
 const PROFILO_INIZIALE: Profilo = {
   regione: "",
@@ -64,9 +68,228 @@ export default function App() {
             }}
           />
         )}
-        {vista === "assistente" && <Assistente profilo={profilo} />}
+
+        {vista !== "onboarding" && (
+          <>
+            <NavTabs vista={vista} onCambia={setVista} />
+            {vista === "assistente" && <Assistente profilo={profilo} />}
+            {vista === "archivio" && <Archivio />}
+            {vista === "scadenze" && <Scadenze />}
+          </>
+        )}
       </div>
     </main>
+  );
+}
+
+/* ------------------------------- NavTabs ----------------------------- */
+
+function NavTabs({
+  vista,
+  onCambia,
+}: {
+  vista: Vista;
+  onCambia: (v: Vista) => void;
+}) {
+  const tabs: { id: Vista; label: string }[] = [
+    { id: "assistente", label: "Assistente" },
+    { id: "archivio", label: "Archivio" },
+    { id: "scadenze", label: "Scadenze" },
+  ];
+  return (
+    <div className="mb-5 flex gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => onCambia(t.id)}
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+            vista === t.id ? "chip-brand" : "text-slate-600 hover:bg-white"
+          }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------- Archivio ---------------------------- */
+
+function etichettaTipo(tipo: string): string {
+  const m: Record<string, string> = {
+    documento: "Documento",
+    analisi_spetta: "Analisi diritti",
+    conversazione: "Conversazione",
+  };
+  return m[tipo] ?? tipo;
+}
+
+function Archivio() {
+  const [atti, setAtti] = useState<Atto[] | null>(null);
+  const [q, setQ] = useState("");
+  const [aperto, setAperto] = useState<string | null>(null);
+
+  async function carica(query = "") {
+    setAtti(null);
+    try {
+      setAtti(await elencoAtti(query));
+    } catch {
+      setAtti([]);
+    }
+  }
+
+  useEffect(() => {
+    carica();
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          carica(q);
+        }}
+        className="flex gap-2"
+      >
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Cerca nel tuo archivio…"
+          className="input"
+        />
+        <button className="btn-brand shrink-0 rounded-lg px-4 text-sm font-semibold">
+          Cerca
+        </button>
+      </form>
+
+      {atti === null && (
+        <p className="text-sm text-slate-400">Carico l&apos;archivio…</p>
+      )}
+      {atti && atti.length === 0 && (
+        <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">
+          Il tuo archivio è vuoto. Le analisi e i documenti che elabori
+          compariranno qui, pronti da ritrovare.
+        </p>
+      )}
+      {atti &&
+        atti.map((a) => (
+          <CardAtto
+            key={a.id}
+            a={a}
+            aperto={aperto === a.id}
+            onToggle={() => setAperto(aperto === a.id ? null : a.id)}
+          />
+        ))}
+    </div>
+  );
+}
+
+function CardAtto({
+  a,
+  aperto,
+  onToggle,
+}: {
+  a: Atto;
+  aperto: boolean;
+  onToggle: () => void;
+}) {
+  const data = new Date(a.created_at).toLocaleDateString("it-IT");
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-start justify-between gap-2 text-left"
+      >
+        <div>
+          <p className="font-semibold text-slate-900">{a.titolo || "Atto"}</p>
+          <p className="text-xs text-slate-400">
+            {etichettaTipo(a.tipo)} · {data}
+          </p>
+        </div>
+        <span className="chip-brand shrink-0 rounded-full px-2 py-0.5 text-xs font-bold">
+          {a.origine}
+        </span>
+      </button>
+      {aperto && <DettaglioAtto a={a} />}
+    </article>
+  );
+}
+
+function DettaglioAtto({ a }: { a: Atto }) {
+  const c = a.contenuto as Record<string, unknown>;
+  const testo = (k: string) => (typeof c[k] === "string" ? (c[k] as string) : "");
+  const opp = Array.isArray(c.opportunita)
+    ? (c.opportunita as { titolo?: string }[])
+    : [];
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm text-slate-700">
+      {testo("riassunto") && <p>{testo("riassunto")}</p>}
+      {testo("messaggio") && (
+        <p className="whitespace-pre-line">{testo("messaggio")}</p>
+      )}
+      {testo("domanda") && (
+        <p>
+          <span className="font-medium">Domanda:</span> {testo("domanda")}
+        </p>
+      )}
+      {testo("risposta") && (
+        <p className="whitespace-pre-line">{testo("risposta")}</p>
+      )}
+      {opp.length > 0 && (
+        <ul className="list-disc space-y-0.5 pl-5">
+          {opp.map((o, i) => (
+            <li key={i}>{o.titolo}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------- Scadenze ---------------------------- */
+
+function Scadenze() {
+  const [righe, setRighe] = useState<ScadenzaRow[] | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setRighe(await elencoScadenze());
+      } catch {
+        setRighe([]);
+      }
+    })();
+  }, []);
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg font-bold text-slate-900">Le tue scadenze</h2>
+      {righe === null && <p className="text-sm text-slate-400">Carico…</p>}
+      {righe && righe.length === 0 && (
+        <p className="rounded-lg bg-slate-100 p-4 text-sm text-slate-600">
+          Nessuna scadenza per ora. Quando Mandari trova una scadenza in un
+          documento che carichi, compare qui.
+        </p>
+      )}
+      {righe &&
+        righe.map((s) => (
+          <div
+            key={s.id}
+            className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <span className="mt-0.5 text-brand">📅</span>
+            <div>
+              <p className="font-medium text-slate-900">{s.cosa}</p>
+              <p className="text-sm text-slate-500">
+                {s.quando
+                  ? new Date(s.quando).toLocaleDateString("it-IT")
+                  : s.quando_testo || "—"}
+              </p>
+            </div>
+          </div>
+        ))}
+    </div>
   );
 }
 
