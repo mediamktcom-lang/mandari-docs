@@ -36,6 +36,11 @@ body {
   font-family: var(--font-brand), "Songti SC", Georgia, serif;
 }
 
+/* Font del claim (editoriale, diverso dal logo) */
+.font-claim {
+  font-family: var(--font-claim), Georgia, serif;
+}
+
 /* Utility di marca */
 .text-brand {
   color: var(--brand);
@@ -54,6 +59,47 @@ body {
 .chip-brand {
   background: var(--brand);
   color: #fff;
+}
+
+/* Tasti secondari senza bordo a contrasto: si accendono d'arancio al click */
+.btn-ghost {
+  background: transparent;
+  color: #334155;
+  border: none;
+}
+.btn-ghost:hover {
+  background: #f8fafc;
+}
+.btn-ghost:active,
+.btn-ghost.attivo {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+/* Tasti-icona della barra: discreti, arancio quando attivi/premuti */
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.icon-btn:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+.icon-btn:active,
+.icon-btn.attivo {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+/* Sfondo con movimento cromatico per la Home */
+.cover-bg {
+  background:
+    radial-gradient(55% 45% at 18% 12%, #ffd9c2 0%, rgba(255, 217, 194, 0) 60%),
+    radial-gradient(45% 35% at 88% 22%, #ffe4d3 0%, rgba(255, 228, 211, 0) 55%),
+    radial-gradient(70% 55% at 75% 92%, #fff1e9 0%, rgba(255, 241, 233, 0) 60%),
+    #ffffff;
 }
 
 /* Campi del questionario */

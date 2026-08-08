@@ -15,7 +15,7 @@ import {
 } from "./lib/api";
 import { assicuraSessione } from "./lib/supabase";
 
-type Vista = "onboarding" | "chat" | "calendario";
+type Vista = "home" | "onboarding" | "chat" | "calendario" | "impostazioni";
 
 const PROFILO_INIZIALE: Profilo = {
   regione: "",
@@ -42,71 +42,355 @@ function coloreLivello(livello: string): string {
 /* ================================ App ================================ */
 
 export default function App() {
-  const [vista, setVista] = useState<Vista>("onboarding");
+  const [vista, setVista] = useState<Vista>("home");
   const [profilo, setProfilo] = useState<Profilo | null>(null);
+  const [menuAperto, setMenuAperto] = useState(false);
 
-  // Avvia (o recupera) l'identità anonima: serve per salvare il Fascicolo.
   useEffect(() => {
     assicuraSessione();
   }, []);
 
+  if (vista === "home") {
+    return <Cover onInizia={() => setVista(profilo ? "chat" : "onboarding")} />;
+  }
+
   return (
     <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <header className="mb-6 text-center">
-          <Logo />
-          <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-brand">
-            La burocrazia, dalla tua parte
-          </p>
-        </header>
+      <div className="mx-auto max-w-2xl px-4 pb-16">
+        <TopBar
+          vista={vista}
+          onDesk={() => setVista("chat")}
+          onHome={() => setVista("home")}
+          onCalendario={() => setVista("calendario")}
+          onMenu={() => setMenuAperto(true)}
+        />
 
-        {vista === "onboarding" && (
-          <Onboarding
-            onFatto={(p) => {
-              setProfilo(p);
-              setVista("chat");
-            }}
-          />
-        )}
-
-        {vista === "chat" && (
-          <>
-            <div className="mb-4 flex justify-end">
-              <button
-                onClick={() => setVista("calendario")}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-[#f2560a] hover:text-slate-900"
-              >
-                📅 Calendario amministrativo
-              </button>
-            </div>
-            <Assistente profilo={profilo} />
-          </>
-        )}
-
-        {vista === "calendario" && (
-          <>
-            <button
-              onClick={() => setVista("chat")}
-              className="mb-4 text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              ← Torna alla chat
-            </button>
-            <CalendarioAmministrativo />
-          </>
-        )}
+        <div className="pt-4">
+          {vista === "onboarding" && (
+            <Onboarding
+              onFatto={(p) => {
+                setProfilo(p);
+                setVista("chat");
+              }}
+            />
+          )}
+          {vista === "chat" && <Assistente profilo={profilo} />}
+          {vista === "calendario" && <CalendarioAmministrativo />}
+          {vista === "impostazioni" && <Impostazioni />}
+        </div>
       </div>
+
+      <MenuScomparsa
+        aperto={menuAperto}
+        onChiudi={() => setMenuAperto(false)}
+        onVai={(v) => {
+          setVista(v);
+          setMenuAperto(false);
+        }}
+      />
     </main>
   );
 }
 
-/* -------------------------------- Logo ------------------------------- */
+/* -------------------------------- Icone ------------------------------ */
 
-function Logo() {
+function IconaHome() {
   return (
-    <h1 className="font-brand text-6xl leading-none">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="2.6" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconaCalendario() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+      <path d="M3.5 9.5H20.5M8 3.5V6.5M16 3.5V6.5" />
+    </svg>
+  );
+}
+
+function IconaMenu() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+
+function IconaChiudi() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function IconaAllega() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M16 8l-6.4 6.4a2.5 2.5 0 003.5 3.5L20 11a4.5 4.5 0 00-6.4-6.4L6.2 12" />
+    </svg>
+  );
+}
+
+function IconaCamera() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 8h3l1.4-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
+      <circle cx="12" cy="13" r="3.2" />
+    </svg>
+  );
+}
+
+/* ------------------------------- Wordmark ---------------------------- */
+
+function Wordmark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`font-brand leading-none ${className}`}>
       <span className="text-brand">M</span>
       <span className="text-slate-900">andari</span>
-    </h1>
+    </span>
+  );
+}
+
+/* -------------------------------- Cover ------------------------------ */
+
+function Cover({ onInizia }: { onInizia: () => void }) {
+  return (
+    <main className="cover-bg flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <Wordmark className="text-7xl" />
+      <p className="font-claim mt-5 text-2xl italic text-slate-500">
+        la burocrazia, dalla tua parte
+      </p>
+      <button
+        onClick={onInizia}
+        className="btn-brand mt-12 rounded-xl px-12 py-3 text-lg font-semibold shadow-sm"
+      >
+        Inizia
+      </button>
+    </main>
+  );
+}
+
+/* -------------------------------- TopBar ----------------------------- */
+
+function TopBar({
+  vista,
+  onDesk,
+  onHome,
+  onCalendario,
+  onMenu,
+}: {
+  vista: Vista;
+  onDesk: () => void;
+  onHome: () => void;
+  onCalendario: () => void;
+  onMenu: () => void;
+}) {
+  return (
+    <div className="sticky top-0 z-20 -mx-4 flex items-center justify-between border-b border-slate-100 bg-white/85 px-4 py-3 backdrop-blur">
+      <button onClick={onDesk} aria-label="Vai alla chat">
+        <Wordmark className="text-2xl" />
+      </button>
+      <div className="flex items-center gap-1">
+        <button onClick={onHome} className="icon-btn rounded-lg p-2" aria-label="Home">
+          <IconaHome />
+        </button>
+        <button
+          onClick={onCalendario}
+          className={`icon-btn rounded-lg p-2 ${vista === "calendario" ? "attivo" : ""}`}
+          aria-label="Calendario amministrativo"
+        >
+          <IconaCalendario />
+        </button>
+        <button onClick={onMenu} className="icon-btn rounded-lg p-2" aria-label="Menu">
+          <IconaMenu />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- Menu a scomparsa ----------------------- */
+
+function MenuScomparsa({
+  aperto,
+  onChiudi,
+  onVai,
+}: {
+  aperto: boolean;
+  onChiudi: () => void;
+  onVai: (v: Vista) => void;
+}) {
+  if (!aperto) return null;
+  return (
+    <div className="fixed inset-0 z-30" onClick={onChiudi}>
+      <div className="absolute inset-0 bg-black/30" />
+      <div
+        className="absolute right-0 top-0 flex h-full w-72 max-w-[85%] flex-col bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-6 flex items-center justify-between">
+          <Wordmark className="text-2xl" />
+          <button
+            onClick={onChiudi}
+            className="icon-btn rounded-lg p-2"
+            aria-label="Chiudi"
+          >
+            <IconaChiudi />
+          </button>
+        </div>
+        <nav className="space-y-1">
+          <VoceMenu onClick={() => onVai("chat")}>Chat</VoceMenu>
+          <VoceMenu onClick={() => onVai("calendario")}>
+            Calendario amministrativo
+          </VoceMenu>
+          <VoceMenu onClick={() => onVai("impostazioni")}>Impostazioni</VoceMenu>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+function VoceMenu({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="btn-ghost block w-full rounded-lg px-3 py-2.5 text-left font-medium"
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ----------------------------- Impostazioni -------------------------- */
+
+function Impostazioni() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold text-slate-900">Impostazioni</h2>
+
+      <SezioneImp
+        titolo="Profili gestiti"
+        descrizione="Gestisci le persone del tuo nucleo e aggiungi il profilo di qualcuno di cui ti occupi (es. un genitore) che non fa parte del tuo nucleo: ognuno con il proprio Fascicolo."
+      >
+        <button className="btn-ghost rounded-lg px-3 py-2 text-sm font-semibold">
+          + Aggiungi un profilo
+        </button>
+        <p className="mt-2 text-xs text-slate-400">
+          Presto: nucleo amministrativo e profili aggiunti (slot dedicati).
+        </p>
+      </SezioneImp>
+
+      <SezioneImp
+        titolo="Abbonamento e pagamenti"
+        descrizione="Il tuo piano e lo stato dei pagamenti."
+      >
+        <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
+          <span className="text-slate-600">Piano attuale</span>
+          <span className="font-semibold text-brand">Free</span>
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Presto: passaggio al piano completo e metodi di pagamento.
+        </p>
+      </SezioneImp>
+
+      <SezioneImp
+        titolo="Impostazioni generali"
+        descrizione="Account, privacy e notifiche."
+      >
+        <ul className="divide-y divide-slate-100 text-sm">
+          <VoceImp>Account e identità</VoceImp>
+          <VoceImp>Privacy e dati</VoceImp>
+          <VoceImp>Notifiche</VoceImp>
+          <VoceImp>Lingua</VoceImp>
+          <VoceImp>Aiuto e assistenza</VoceImp>
+        </ul>
+        <p className="mt-2 text-xs text-slate-400">Presto disponibili.</p>
+      </SezioneImp>
+    </div>
+  );
+}
+
+function SezioneImp({
+  titolo,
+  descrizione,
+  children,
+}: {
+  titolo: string;
+  descrizione: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 className="font-semibold text-slate-900">{titolo}</h3>
+      <p className="mt-1 text-sm text-slate-600">{descrizione}</p>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function VoceImp({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-center justify-between py-2.5 text-slate-700">
+      <span>{children}</span>
+      <span className="text-slate-300">›</span>
+    </li>
   );
 }
 
@@ -350,7 +634,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
     {
       ruolo: "mandari",
       testo:
-        "Ciao! Sono Mandari. Scrivimi una domanda (es. «cosa mi spetta se perdo il lavoro?») oppure carica un documento e te lo spiego.",
+        "Ciao! Sono Mandari. Scrivimi una domanda (es. «cosa mi spetta se perdo il lavoro?») oppure allega o fotografa un documento e te lo spiego.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -364,7 +648,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
     const testoUtente = input.trim()
       ? input.trim()
       : file
-        ? `📎 ${file.name}`
+        ? file.name
         : "";
     setMessaggi((m) => [...m, { ruolo: "utente", testo: testoUtente }]);
 
@@ -413,7 +697,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
       <form onSubmit={invia} className="sticky bottom-4 mt-2 space-y-2">
         {file && (
           <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs text-slate-600">
-            <span>📎 {file.name}</span>
+            <span>{file.name}</span>
             <button
               type="button"
               onClick={() => setFile(null)}
@@ -423,15 +707,22 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm">
-          <label
-            className="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 transition hover:border-[#f2560a] hover:text-slate-900"
-            title="Allega una foto o un PDF"
-          >
-            📎 Allega
+        <div className="flex items-center gap-1 rounded-xl border border-slate-300 bg-white p-2 shadow-sm">
+          <label className="icon-btn rounded-lg p-2" title="Allega un file">
+            <IconaAllega />
             <input
               type="file"
               accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+          <label className="icon-btn rounded-lg p-2" title="Scatta una foto">
+            <IconaCamera />
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
               className="hidden"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
@@ -440,7 +731,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Scrivi una domanda…"
-            className="flex-1 bg-transparent px-1 text-slate-800 outline-none"
+            className="min-w-0 flex-1 bg-transparent px-1 text-slate-800 outline-none"
           />
           <button
             type="submit"
@@ -451,9 +742,8 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
           </button>
         </div>
         <p className="px-1 text-xs text-slate-400">
-          Fai una domanda, oppure premi{" "}
-          <span className="font-medium text-slate-500">📎 Allega</span> per
-          caricare una foto o un PDF di un documento da farti spiegare.
+          Scrivi, allega un file o scatta la foto di un documento da farti
+          spiegare.
         </p>
       </form>
     </div>
@@ -651,12 +941,9 @@ function CalendarioAmministrativo() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">📅</span>
-        <h2 className="text-xl font-bold text-slate-900">
-          Calendario amministrativo
-        </h2>
-      </div>
+      <h2 className="text-xl font-bold text-slate-900">
+        Calendario amministrativo
+      </h2>
 
       {righe === null && <p className="text-sm text-slate-400">Carico…</p>}
       {righe && righe.length === 0 && (
@@ -692,10 +979,7 @@ function EventoAgenda({
 
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-stretch text-left"
-      >
+      <button onClick={onToggle} className="flex w-full items-stretch text-left">
         <div className="flex w-16 shrink-0 flex-col items-center justify-center bg-[#fff1e9] px-2 py-3 text-brand">
           <span className="text-xl font-bold leading-none">{giorno}</span>
           <span className="text-xs font-medium uppercase">{mese}</span>
