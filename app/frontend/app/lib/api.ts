@@ -77,6 +77,14 @@ export type Atto = {
   contenuto: Record<string, unknown>;
 };
 
+export type AttoBreve = {
+  id: string;
+  titolo: string;
+  tipo: string;
+  origine: string;
+  contenuto: Record<string, unknown>;
+};
+
 export type ScadenzaRow = {
   id: string;
   cosa: string;
@@ -84,6 +92,7 @@ export type ScadenzaRow = {
   quando_testo: string;
   stato: string;
   created_at: string;
+  atti?: AttoBreve | AttoBreve[] | null;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";

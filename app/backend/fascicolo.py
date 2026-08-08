@@ -13,8 +13,24 @@ risposta all'utente.
 from __future__ import annotations
 
 import os
+import re
 
 import httpx
+
+
+def _parse_data(testo: str | None) -> str | None:
+    """Prova a estrarre una data (ISO) da un testo libero, es. '15/10/2026'."""
+    if not testo:
+        return None
+    m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})", testo)
+    if m:
+        g, me, a = m.groups()
+        try:
+            return f"{int(a):04d}-{int(me):02d}-{int(g):02d}"
+        except ValueError:
+            return None
+    m2 = re.search(r"\d{4}-\d{2}-\d{2}", testo)
+    return m2.group(0) if m2 else None
 
 _CAMPI_PROFILO = [
     "regione",
@@ -100,7 +116,11 @@ async def crea_scadenze(token: str, atto_id: str | None, scadenze: list) -> None
         cosa = (s.get("cosa") or "").strip()
         if not cosa:
             continue
-        riga = {"cosa": cosa, "quando_testo": s.get("quando", "")}
+        testo_quando = s.get("quando", "")
+        riga = {"cosa": cosa, "quando_testo": testo_quando}
+        data = _parse_data(testo_quando)
+        if data:
+            riga["quando"] = data
         if atto_id:
             riga["atto_id"] = atto_id
         righe.append(riga)
@@ -140,8 +160,11 @@ async def elenco_atti(token: str, q: str | None = None) -> list:
 async def elenco_scadenze(token: str) -> list:
     """Restituisce le scadenze del Fascicolo (motore DATA)."""
     params = {
-        "select": "id,cosa,quando,quando_testo,stato,created_at",
-        "order": "created_at.desc",
+        "select": (
+            "id,cosa,quando,quando_testo,stato,created_at,"
+            "atti(id,titolo,tipo,origine,contenuto)"
+        ),
+        "order": "quando.asc.nullslast",
     }
     try:
         async with httpx.AsyncClient(timeout=10) as client:
