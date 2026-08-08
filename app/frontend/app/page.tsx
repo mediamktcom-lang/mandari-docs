@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   analizza,
   chiediAssistente,
@@ -9,6 +9,7 @@ import {
   type Profilo,
   type SpiegazioneDoc,
 } from "./lib/api";
+import { assicuraSessione } from "./lib/supabase";
 
 type Vista = "onboarding" | "assistente";
 
@@ -39,6 +40,11 @@ function coloreLivello(livello: string): string {
 export default function App() {
   const [vista, setVista] = useState<Vista>("onboarding");
   const [profilo, setProfilo] = useState<Profilo | null>(null);
+
+  // Avvia (o recupera) l'identità anonima: serve per salvare il Fascicolo.
+  useEffect(() => {
+    assicuraSessione();
+  }, []);
 
   return (
     <main className="min-h-screen bg-white text-slate-900">
@@ -387,10 +393,10 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
         )}
         <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm">
           <label
-            className="cursor-pointer rounded-lg px-2 py-1 text-lg text-slate-500 hover:bg-slate-100"
-            title="Allega un documento"
+            className="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 transition hover:border-[#f2560a] hover:text-slate-900"
+            title="Allega una foto o un PDF"
           >
-            📎
+            📎 Allega
             <input
               type="file"
               accept="image/*,application/pdf"
@@ -401,7 +407,7 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Scrivi o carica un documento…"
+            placeholder="Scrivi una domanda…"
             className="flex-1 bg-transparent px-1 text-slate-800 outline-none"
           />
           <button
@@ -412,6 +418,11 @@ function Assistente({ profilo }: { profilo: Profilo | null }) {
             Invia
           </button>
         </div>
+        <p className="px-1 text-xs text-slate-400">
+          Fai una domanda, oppure premi{" "}
+          <span className="font-medium text-slate-500">📎 Allega</span> per
+          caricare una foto o un PDF di un documento da farti spiegare.
+        </p>
       </form>
     </div>
   );

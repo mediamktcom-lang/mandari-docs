@@ -1,8 +1,8 @@
 """
-Backend di Mandari (FastAPI) — Fetta 1.
+Backend di Mandari (FastAPI).
 
-Espone un'unica funzione utile: ricevere le risposte del questionario demo e
-restituire la prima analisi di SPETTA.
+Espone gli endpoint dell'assistente e, quando l'utente è identificato, salva
+tutto nel Fascicolo Amministrativo (Supabase).
 
 Avvio locale (dalla cartella app/backend):
     uvicorn main:app --reload
@@ -11,19 +11,19 @@ Avvio locale (dalla cartella app/backend):
 import json
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, Header, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from carta import spiega_documento
+from fascicolo import crea_atto, crea_scadenze, estrai_token, salva_profilo
 from orchestratore import rispondi
 from spetta import Profilo, genera_analisi
 
-# Carica le variabili dal file .env (se presente), es. la chiave AI.
+# Carica le variabili dal file .env (se presente).
 load_dotenv()
 
-app = FastAPI(title="Mandari API", version="0.1.0")
+app = FastAPI(title="Mandari API", version="0.3.0")
 
-# Permette al sito web (frontend) di parlare con questo backend durante lo sviluppo.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -39,9 +39,31 @@ def health() -> dict:
 
 
 @app.post("/api/analyze")
-def analyze(profilo: Profilo) -> dict:
-    """Riceve il profilo del questionario e restituisce l'analisi di SPETTA."""
-    return genera_analisi(profilo)
+async def analyze(
+    profilo: Profilo, authorization: str | None = Header(default=None)
+) -> dict:
+    """Analisi SPETTA dell'onboarding; salva profilo e Atto nel Fascicolo."""
+    analisi = genera_analisi(profilo)
+
+    token = estrai_token(authorization)
+    if token:
+        await salva_profilo(token, profilo.model_dump())
+        titoli = [o.get("titolo", "") for o in analisi.get("opportunita", [])]
+        await crea_atto(
+            token,
+            {
+                "tipo": "analisi_spetta",
+                "titolo": "Prima analisi SPETTA",
+                "origine": "SPETTA",
+                "contenuto": analisi,
+                "metadati": {
+                    "categoria": "onboarding",
+                    "n_opportunita": len(titoli),
+                },
+                "testo_ricerca": "prima analisi spetta " + " ".join(titoli),
+            },
+        )
+    return analisi
 
 
 @app.post("/api/carta")
@@ -56,12 +78,74 @@ async def assistant(
     messaggio: str = Form(""),
     profilo: str = Form(""),
     file: UploadFile | None = File(None),
+    authorization: str | None = Header(default=None),
 ) -> dict:
-    """Assistente unico (Anya): capisce la richiesta e instrada al motore giusto."""
+    """Assistente unico (Anya): instrada al motore giusto e salva nel Fascicolo."""
     dati = await file.read() if file is not None else None
     mime = file.content_type if file is not None else None
     try:
         prof = json.loads(profilo) if profilo else None
     except json.JSONDecodeError:
         prof = None
-    return rispondi(messaggio, dati, mime, prof)
+
+    risposta = rispondi(messaggio, dati, mime, prof)
+
+    token = estrai_token(authorization)
+    if token:
+        await _persisti_interazione(token, messaggio, risposta)
+    return risposta
+
+
+async def _persisti_interazione(token: str, messaggio: str, risposta: dict) -> None:
+    """Crea l'Atto (e le eventuali scadenze) corrispondente all'interazione."""
+    doc = risposta.get("documento")
+    opportunita = risposta.get("opportunita") or []
+    motore = risposta.get("motore", "")
+
+    if doc:
+        atto_id = await crea_atto(
+            token,
+            {
+                "tipo": "documento",
+                "titolo": doc.get("tipo") or "Documento",
+                "origine": "CARTA",
+                "contenuto": doc,
+                "metadati": {"attendibilita": doc.get("attendibilita", "")},
+                "testo_ricerca": " ".join(
+                    [doc.get("tipo", ""), doc.get("riassunto", "")]
+                ),
+            },
+        )
+        await crea_scadenze(token, atto_id, doc.get("scadenze", []))
+    elif opportunita:
+        await crea_atto(
+            token,
+            {
+                "tipo": "analisi_spetta",
+                "titolo": (messaggio[:80] or "Analisi SPETTA"),
+                "origine": "SPETTA",
+                "contenuto": {
+                    "messaggio": risposta.get("messaggio", ""),
+                    "opportunita": opportunita,
+                },
+                "metadati": {"n_opportunita": len(opportunita)},
+                "testo_ricerca": " ".join(
+                    [messaggio] + [o.get("titolo", "") for o in opportunita]
+                ),
+            },
+        )
+    else:
+        await crea_atto(
+            token,
+            {
+                "tipo": "conversazione",
+                "titolo": (messaggio[:80] or "Conversazione"),
+                "origine": motore or "ANYA",
+                "contenuto": {
+                    "domanda": messaggio,
+                    "risposta": risposta.get("messaggio", ""),
+                },
+                "metadati": {"motore": motore},
+                "testo_ricerca": messaggio + " " + risposta.get("messaggio", ""),
+            },
+        )

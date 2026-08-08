@@ -1,5 +1,7 @@
 // Tipi e collegamento al backend (il "motore" FastAPI).
 
+import { getToken } from "./supabase";
+
 export type Profilo = {
   regione: string;
   eta: number;
@@ -46,23 +48,6 @@ export type SpiegazioneDoc = {
   nota_tecnica?: string;
 };
 
-// Indirizzo del backend. In sviluppo è http://localhost:8000.
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-export async function analizza(profilo: Profilo): Promise<Analisi> {
-  const risposta = await fetch(`${API_URL}/api/analyze`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(profilo),
-  });
-
-  if (!risposta.ok) {
-    throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
-  }
-
-  return risposta.json();
-}
-
 export type RispostaAssistente = {
   motore: string;
   messaggio: string;
@@ -72,6 +57,26 @@ export type RispostaAssistente = {
   avviso: string;
   nota_tecnica?: string;
 };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Intestazione di autenticazione (token della sessione), se disponibile.
+async function authHeader(): Promise<Record<string, string>> {
+  const token = await getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function analizza(profilo: Profilo): Promise<Analisi> {
+  const risposta = await fetch(`${API_URL}/api/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeader()) },
+    body: JSON.stringify(profilo),
+  });
+  if (!risposta.ok) {
+    throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
+  }
+  return risposta.json();
+}
 
 export async function chiediAssistente(
   messaggio: string,
@@ -85,13 +90,12 @@ export async function chiediAssistente(
 
   const risposta = await fetch(`${API_URL}/api/assistant`, {
     method: "POST",
+    headers: { ...(await authHeader()) },
     body: modulo,
   });
-
   if (!risposta.ok) {
     throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
   }
-
   return risposta.json();
 }
 
@@ -101,12 +105,11 @@ export async function spiegaDocumento(file: File): Promise<SpiegazioneDoc> {
 
   const risposta = await fetch(`${API_URL}/api/carta`, {
     method: "POST",
+    headers: { ...(await authHeader()) },
     body: modulo,
   });
-
   if (!risposta.ok) {
     throw new Error(`Il motore ha risposto con un errore (${risposta.status}).`);
   }
-
   return risposta.json();
 }
