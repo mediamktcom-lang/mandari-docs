@@ -916,21 +916,16 @@ function AccountBox() {
       setMsg(err);
       return;
     }
-    setMsg(
-      azione === "registra"
-        ? "Account creato. Se richiesto, conferma l'email dal messaggio ricevuto."
-        : "Accesso eseguito."
-    );
     setModo("none");
     setEmail("");
     setPassword("");
-    await ricarica();
+    // Ricarico l'app così tutto (piano, admin, profili) si allinea al nuovo accesso.
+    window.location.reload();
   }
 
   async function logout() {
     await esci();
-    await ricarica();
-    setMsg("Sei uscito.");
+    window.location.reload();
   }
 
   if (!info) return null;
