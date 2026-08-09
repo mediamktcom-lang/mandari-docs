@@ -9,6 +9,7 @@ Avvio locale (dalla cartella app/backend):
 """
 
 import json
+import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, Header, UploadFile
@@ -45,9 +46,15 @@ load_dotenv()
 
 app = FastAPI(title="Mandari API", version="0.3.0")
 
+# Origini ammesse: sempre localhost (sviluppo) + i domini indicati in
+# FRONTEND_ORIGINS (separati da virgola) quando l'app è online.
+_origini = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_extra = os.getenv("FRONTEND_ORIGINS", "")
+_origini += [o.strip() for o in _extra.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=_origini,
     allow_methods=["*"],
     allow_headers=["*"],
 )
