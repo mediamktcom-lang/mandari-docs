@@ -1325,34 +1325,56 @@ function AttivazioneInvito({
   const [codice, setCodice] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [carica, setCarica] = useState(false);
+  const [riscattato, setRiscattato] = useState(false);
 
   async function conferma() {
     setMsg(null);
-    if (!email.trim() || !password.trim()) {
-      setMsg("Inserisci email e password.");
+
+    // --- Accesso con account esistente ---
+    if (modo === "accedi") {
+      if (!email.trim() || !password.trim()) {
+        setMsg("Inserisci email e password.");
+        return;
+      }
+      setCarica(true);
+      try {
+        const err = await accedi(email.trim(), password);
+        if (err) {
+          setMsg(traduciErrore(err));
+          return;
+        }
+        await onFatto();
+      } finally {
+        setCarica(false);
+      }
       return;
     }
-    if (modo === "registra" && !codice.trim()) {
+
+    // --- Attivazione con codice invito (email/password facoltativi) ---
+    if (!codice.trim() && !riscattato) {
       setMsg("Inserisci il codice invito.");
       return;
     }
     setCarica(true);
     try {
-      if (modo === "registra") {
-        const err = await registraEmail(email.trim(), password);
-        if (err) {
-          setMsg(traduciErrore(err));
-          return;
-        }
+      // 1) Riscatta il codice (una sola volta) → sblocca l'accesso.
+      if (!riscattato) {
         const r = await riscattaInvito(codice.trim());
         if (!r.ok) {
           setMsg(r.errore ?? "Codice non valido.");
           return;
         }
-      } else {
-        const err = await accedi(email.trim(), password);
+        setRiscattato(true);
+      }
+      // 2) Facoltativo: crea l'account per ritrovare tutto da altri dispositivi.
+      if (email.trim() && password.trim()) {
+        const err = await registraEmail(email.trim(), password);
         if (err) {
-          setMsg(traduciErrore(err));
+          setMsg(
+            "Accesso attivato! Non sono riuscito a salvare l'account ora (" +
+              traduciErrore(err) +
+              ") — puoi farlo più tardi dalle Impostazioni. Premi di nuovo per entrare."
+          );
           return;
         }
       }
@@ -1378,32 +1400,56 @@ function AttivazioneInvito({
         </h3>
         <p className="mt-1 text-sm text-slate-600">
           {modo === "registra"
-            ? "Per usare Mandari crea il tuo account e inserisci il codice invito che hai ricevuto."
+            ? "Per usare Mandari inserisci il codice invito che hai ricevuto."
             : "Bentornato! Accedi con la tua email e password."}
         </p>
 
         <div className="mt-4 space-y-2">
-          <input
-            className="input"
-            type="email"
-            placeholder="La tua email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className="input"
-            type="password"
-            placeholder="Scegli una password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {modo === "registra" && (
-            <input
-              className="input"
-              placeholder="Codice invito"
-              value={codice}
-              onChange={(e) => setCodice(e.target.value)}
-            />
+          {modo === "registra" ? (
+            <>
+              <input
+                className="input"
+                placeholder="Codice invito"
+                value={codice}
+                onChange={(e) => setCodice(e.target.value)}
+                autoFocus
+              />
+              <p className="pt-1 text-xs font-medium text-slate-500">
+                Facoltativo — crea un account per ritrovare tutto da un altro
+                dispositivo:
+              </p>
+              <input
+                className="input"
+                type="email"
+                placeholder="Email (facoltativa)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="input"
+                type="password"
+                placeholder="Password (facoltativa)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </>
+          ) : (
+            <>
+              <input
+                className="input"
+                type="email"
+                placeholder="La tua email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="input"
+                type="password"
+                placeholder="La tua password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </>
           )}
         </div>
 
