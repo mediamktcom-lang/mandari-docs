@@ -5,11 +5,17 @@ import {
   analizza,
   chiediAssistente,
   creaDelega,
+  creaInvito,
   creaPersona,
   elencoScadenze,
   getDeleghe,
+  getInviti,
+  impostaStatoInvito,
   revocaDelega,
+  riscattaInvito,
+  type Account,
   type Delega,
+  type Invito,
   getAccount,
   getAudit,
   getPersone,
@@ -64,6 +70,7 @@ export default function App() {
   const [menuAperto, setMenuAperto] = useState(false);
   const [persone, setPersone] = useState<Persona[]>([]);
   const [personaId, setPersonaId] = useState<string>("");
+  const [account, setAccount] = useState<Account | null>(null);
 
   const ricaricaPersone = async (impostaAttiva = false) => {
     const ps = await getPersone();
@@ -74,10 +81,15 @@ export default function App() {
     }
   };
 
+  const ricaricaAccount = async () => {
+    setAccount(await getAccount());
+  };
+
   useEffect(() => {
     (async () => {
       await assicuraSessione();
       await ricaricaPersone(true);
+      await ricaricaAccount();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -118,7 +130,12 @@ export default function App() {
           {vista === "chat" && (
             <>
               {selettore}
-              <Assistente profilo={profilo} personaId={personaId} />
+              <Assistente
+                profilo={profilo}
+                personaId={personaId}
+                attivato={account?.attivato ?? false}
+                onAttivato={ricaricaAccount}
+              />
             </>
           )}
           {vista === "calendario" && (
@@ -133,6 +150,7 @@ export default function App() {
               personaId={personaId}
               onCambiaPersona={setPersonaId}
               onRicarica={ricaricaPersone}
+              isAdmin={account?.is_admin ?? false}
             />
           )}
         </div>
@@ -437,15 +455,26 @@ function Impostazioni({
   personaId,
   onCambiaPersona,
   onRicarica,
+  isAdmin,
 }: {
   persone: Persona[];
   personaId: string;
   onCambiaPersona: (id: string) => void;
   onRicarica: () => Promise<void>;
+  isAdmin: boolean;
 }) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-slate-900">Impostazioni</h2>
+
+      {isAdmin && (
+        <SezioneImp
+          titolo="Codici invito (admin)"
+          descrizione="Crea e gestisci i codici che danno accesso a Mandari durante la fase di prova."
+        >
+          <GestioneInviti />
+        </SezioneImp>
+      )}
 
       <SezioneImp
         titolo="Il tuo account"
@@ -587,12 +616,125 @@ function Deleghe() {
   );
 }
 
+function GestioneInviti() {
+  const [lista, setLista] = useState<Invito[] | null>(null);
+  const [codice, setCodice] = useState("");
+  const [nota, setNota] = useState("");
+  const [maxUsi, setMaxUsi] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [carica, setCarica] = useState(false);
+
+  async function ricarica() {
+    setLista(await getInviti());
+  }
+  useEffect(() => {
+    ricarica();
+  }, []);
+
+  async function crea() {
+    if (!codice.trim()) return;
+    setCarica(true);
+    setMsg(null);
+    const r = await creaInvito(
+      codice.trim(),
+      nota.trim(),
+      maxUsi.trim() ? Number(maxUsi) : null
+    );
+    setCarica(false);
+    if (r.errore) {
+      setMsg(r.errore);
+      return;
+    }
+    setCodice("");
+    setNota("");
+    setMaxUsi("");
+    await ricarica();
+  }
+
+  async function cambiaStato(inv: Invito) {
+    await impostaStatoInvito(inv.id, !inv.attivo);
+    await ricarica();
+  }
+
+  return (
+    <div>
+      {lista && lista.length > 0 && (
+        <ul className="mb-3 divide-y divide-slate-100 text-sm">
+          {lista.map((inv) => (
+            <li key={inv.id} className="flex items-center justify-between gap-2 py-2">
+              <div className="min-w-0">
+                <span className="font-mono font-semibold text-slate-800">
+                  {inv.codice}
+                </span>
+                {inv.nota && (
+                  <span className="ml-2 text-slate-400">{inv.nota}</span>
+                )}
+                <div className="text-xs text-slate-500">
+                  usato {inv.usi}
+                  {inv.max_usi != null ? ` / ${inv.max_usi}` : " (illimitato)"}
+                  {" · "}
+                  {inv.attivo ? "attivo" : "disattivato"}
+                </div>
+              </div>
+              <button
+                onClick={() => cambiaStato(inv)}
+                className="btn-ghost shrink-0 rounded-lg px-2 py-1 text-xs font-semibold"
+              >
+                {inv.attivo ? "Disattiva" : "Riattiva"}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="space-y-2 rounded-xl bg-slate-50 p-3">
+        <input
+          className="input"
+          placeholder="Codice (es. AMICI2026)"
+          value={codice}
+          onChange={(e) => setCodice(e.target.value)}
+        />
+        <div className="flex gap-2">
+          <input
+            className="input"
+            placeholder="Nota (facoltativa)"
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+          />
+          <input
+            className="input w-32 shrink-0"
+            type="number"
+            min={1}
+            placeholder="Max usi"
+            value={maxUsi}
+            onChange={(e) => setMaxUsi(e.target.value)}
+          />
+        </div>
+        <button
+          disabled={carica}
+          onClick={crea}
+          className="btn-brand w-full rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-60"
+        >
+          {carica ? "…" : "Crea codice"}
+        </button>
+        {msg && <p className="text-xs text-amber-700">{msg}</p>}
+        <p className="text-xs text-slate-400">
+          Lascia &ldquo;Max usi&rdquo; vuoto per un codice illimitato.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 const ETICHETTE_AZIONE: Record<string, string> = {
   richiesta: "Richiesta all'assistente",
   analisi_diritti: "Analisi diritti (SPETTA)",
   documento_caricato: "Documento caricato (CARTA)",
   ricerca_soluzioni: "Ricerca soluzioni (AFFIDO)",
   profilo_aggiunto: "Profilo aggiunto",
+  invito_riscattato: "Codice invito attivato",
+  delega_creata: "Delega concessa",
+  delega_revocata: "Delega revocata",
 };
 
 function AttivitaRecenti() {
@@ -1170,27 +1312,174 @@ type Messaggio = {
   avviso?: string;
 };
 
+function AttivazioneInvito({
+  onChiudi,
+  onFatto,
+}: {
+  onChiudi: () => void;
+  onFatto: () => Promise<void>;
+}) {
+  const [modo, setModo] = useState<"registra" | "accedi">("registra");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [codice, setCodice] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [carica, setCarica] = useState(false);
+
+  async function conferma() {
+    setMsg(null);
+    if (!email.trim() || !password.trim()) {
+      setMsg("Inserisci email e password.");
+      return;
+    }
+    if (modo === "registra" && !codice.trim()) {
+      setMsg("Inserisci il codice invito.");
+      return;
+    }
+    setCarica(true);
+    try {
+      if (modo === "registra") {
+        const err = await registraEmail(email.trim(), password);
+        if (err) {
+          setMsg(traduciErrore(err));
+          return;
+        }
+        const r = await riscattaInvito(codice.trim());
+        if (!r.ok) {
+          setMsg(r.errore ?? "Codice non valido.");
+          return;
+        }
+      } else {
+        const err = await accedi(email.trim(), password);
+        if (err) {
+          setMsg(traduciErrore(err));
+          return;
+        }
+      }
+      await onFatto();
+    } finally {
+      setCarica(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      onClick={onChiudi}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-bold text-slate-900">
+          {modo === "registra"
+            ? "Attiva Mandari"
+            : "Accedi al tuo account"}
+        </h3>
+        <p className="mt-1 text-sm text-slate-600">
+          {modo === "registra"
+            ? "Per usare Mandari crea il tuo account e inserisci il codice invito che hai ricevuto."
+            : "Bentornato! Accedi con la tua email e password."}
+        </p>
+
+        <div className="mt-4 space-y-2">
+          <input
+            className="input"
+            type="email"
+            placeholder="La tua email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            className="input"
+            type="password"
+            placeholder="Scegli una password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {modo === "registra" && (
+            <input
+              className="input"
+              placeholder="Codice invito"
+              value={codice}
+              onChange={(e) => setCodice(e.target.value)}
+            />
+          )}
+        </div>
+
+        {msg && <p className="mt-3 text-sm text-amber-700">{msg}</p>}
+
+        <button
+          disabled={carica}
+          onClick={conferma}
+          className="btn-brand mt-4 w-full rounded-xl px-4 py-3 font-semibold disabled:opacity-60"
+        >
+          {carica
+            ? "Attendi…"
+            : modo === "registra"
+              ? "Attiva e continua"
+              : "Accedi"}
+        </button>
+
+        <button
+          onClick={() => {
+            setMsg(null);
+            setModo(modo === "registra" ? "accedi" : "registra");
+          }}
+          className="mt-3 w-full text-center text-sm text-slate-500 hover:text-slate-800"
+        >
+          {modo === "registra"
+            ? "Hai già un account? Accedi"
+            : "Non hai un account? Attiva con invito"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function traduciErrore(err: string): string {
+  const e = err.toLowerCase();
+  if (e.includes("already") || e.includes("registered") || e.includes("exists"))
+    return "Questa email risulta già registrata. Prova ad accedere.";
+  if (e.includes("invalid") && e.includes("credential"))
+    return "Email o password non corretti.";
+  if (e.includes("password"))
+    return "La password deve avere almeno 6 caratteri.";
+  return err;
+}
+
 function Assistente({
   profilo,
   personaId,
+  attivato,
+  onAttivato,
 }: {
   profilo: Profilo | null;
   personaId: string;
+  attivato: boolean;
+  onAttivato: () => Promise<void>;
 }) {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([
     {
       ruolo: "mandari",
       testo:
-        "Ciao! Sono Mandari. Scrivimi una domanda (es. «cosa mi spetta se perdo il lavoro?») oppure allega o fotografa un documento e te lo spiego.",
+        "Ciao, sono Mandari 👋 Mi occupo io della tua vita amministrativa: ti dico cosa ti spetta, ti spiego lettere e documenti, tengo d'occhio le scadenze e ti aiuto a portare a termine le pratiche. Scrivimi con parole tue — anche la foto di un documento va benissimo — e ci penso io.",
     },
   ]);
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [caricamento, setCaricamento] = useState(false);
+  const [mostraAttivazione, setMostraAttivazione] = useState(false);
 
   async function invia(e: React.FormEvent) {
     e.preventDefault();
     if ((!input.trim() && !file) || caricamento) return;
+
+    // In fase di prova: per interagire serve un account attivato con invito.
+    if (!attivato) {
+      setMostraAttivazione(true);
+      return;
+    }
 
     const testoUtente = input.trim()
       ? input.trim()
@@ -1293,6 +1582,16 @@ function Assistente({
           spiegare.
         </p>
       </form>
+
+      {mostraAttivazione && (
+        <AttivazioneInvito
+          onChiudi={() => setMostraAttivazione(false)}
+          onFatto={async () => {
+            await onAttivato();
+            setMostraAttivazione(false);
+          }}
+        />
+      )}
     </div>
   );
 }

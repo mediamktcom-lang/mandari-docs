@@ -20,19 +20,24 @@ from fascicolo import (
     QUOTA_BYTE,
     crea_atto,
     crea_delega,
+    crea_invito,
     crea_persona,
     crea_scadenze,
     elenco_deleghe,
     elenco_atti,
     elenco_audit,
+    elenco_inviti,
     elenco_persone,
     elenco_scadenze,
     estrai_token,
+    imposta_stato_invito,
+    is_admin,
     leggi_piano,
     persona_self,
     recupera_contesto,
     registra_audit,
     revoca_delega,
+    riscatta_invito,
     salva_allegato,
     salva_profilo,
     spazio_usato,
@@ -107,10 +112,77 @@ async def fascicolo(
 
 @app.get("/api/account")
 async def account(authorization: str | None = Header(default=None)) -> dict:
-    """Informazioni account: piano (free/pro)."""
+    """Informazioni account: piano (free/pro) e se è l'amministratore."""
     token = estrai_token(authorization)
     piano = await leggi_piano(token) if token else "free"
-    return {"piano": piano}
+    admin = is_admin(token) if token else False
+    # Ha accesso pieno chi ha riscattato un invito (piano != free) o l'admin.
+    attivato = admin or piano != "free"
+    return {"piano": piano, "is_admin": admin, "attivato": attivato}
+
+
+@app.post("/api/invito/riscatta")
+async def invito_riscatta(
+    codice: str = Form(...), authorization: str | None = Header(default=None)
+) -> dict:
+    """Riscatta un codice invito: sblocca l'accesso pieno a Mandari."""
+    token = estrai_token(authorization)
+    if not token:
+        return {"ok": False, "errore": "Devi avere una sessione attiva."}
+    codice = codice.strip()
+    if not codice:
+        return {"ok": False, "errore": "Inserisci un codice."}
+    esito = await riscatta_invito(token, codice)
+    if esito.get("ok"):
+        await registra_audit(token, "invito_riscattato", {"codice": codice})
+    return esito
+
+
+@app.get("/api/inviti")
+async def inviti(authorization: str | None = Header(default=None)) -> dict:
+    """Elenco dei codici invito (solo amministratore)."""
+    token = estrai_token(authorization)
+    if not token or not is_admin(token):
+        return {"inviti": []}
+    return {"inviti": await elenco_inviti(token)}
+
+
+@app.post("/api/inviti")
+async def aggiungi_invito(
+    codice: str = Form(...),
+    nota: str = Form(""),
+    max_usi: str = Form(""),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """Crea un nuovo codice invito (solo amministratore)."""
+    token = estrai_token(authorization)
+    if not token or not is_admin(token):
+        return {"errore": "Non autorizzato."}
+    codice = codice.strip()
+    if not codice:
+        return {"errore": "Inserisci un codice."}
+    try:
+        limite = int(max_usi) if max_usi.strip() else None
+    except ValueError:
+        limite = None
+    iid = await crea_invito(token, codice, nota.strip(), limite)
+    if iid:
+        return {"id": iid}
+    return {"errore": "Codice già esistente o non creabile."}
+
+
+@app.post("/api/inviti/stato")
+async def stato_invito(
+    id: str = Form(...),
+    attivo: str = Form(...),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """Attiva o disattiva un codice invito (solo amministratore)."""
+    token = estrai_token(authorization)
+    if not token or not is_admin(token):
+        return {"errore": "Non autorizzato."}
+    await imposta_stato_invito(token, id, attivo.lower() in ("1", "true", "si", "sì"))
+    return {"ok": True}
 
 
 @app.get("/api/persone")

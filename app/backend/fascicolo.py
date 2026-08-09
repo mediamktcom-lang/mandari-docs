@@ -25,15 +25,31 @@ import httpx
 QUOTA_BYTE = 500 * 1024 * 1024  # 500 MB
 
 
-def user_id_da_token(token: str) -> str | None:
-    """Estrae l'id utente (sub) dal token, solo per costruire il percorso file."""
+def _claims_da_token(token: str) -> dict:
+    """Decodifica (senza verificare) il contenuto del token JWT."""
     try:
         payload = token.split(".")[1]
         payload += "=" * (-len(payload) % 4)
-        dati = json.loads(base64.urlsafe_b64decode(payload))
-        return dati.get("sub")
+        return json.loads(base64.urlsafe_b64decode(payload))
     except Exception:
-        return None
+        return {}
+
+
+def user_id_da_token(token: str) -> str | None:
+    """Estrae l'id utente (sub) dal token, solo per costruire il percorso file."""
+    return _claims_da_token(token).get("sub")
+
+
+def email_da_token(token: str) -> str | None:
+    """Estrae l'email dell'utente dal token (per riconoscere l'admin)."""
+    return _claims_da_token(token).get("email")
+
+
+def is_admin(token: str) -> bool:
+    """Vero se il token appartiene all'amministratore (ADMIN_EMAIL)."""
+    admin = os.getenv("ADMIN_EMAIL", "mediamktcom@gmail.com").strip().lower()
+    email = (email_da_token(token) or "").strip().lower()
+    return bool(email) and email == admin
 
 
 def _parse_data(testo: str | None) -> str | None:
@@ -311,6 +327,74 @@ async def leggi_piano(token: str) -> str:
     except Exception:
         pass
     return "free"
+
+
+async def riscatta_invito(token: str, codice: str) -> dict:
+    """Riscatta un codice invito (sblocca l'accesso pieno). Ritorna {ok, errore?}."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"{_base()}/rest/v1/rpc/riscatta_invito",
+                headers=_headers(token, "return=representation"),
+                json={"p_codice": codice},
+            )
+            if r.status_code < 300:
+                d = r.json()
+                if isinstance(d, dict):
+                    return d
+            return {"ok": False, "errore": "Non riesco a verificare il codice."}
+    except Exception:
+        return {"ok": False, "errore": "Non riesco a verificare il codice."}
+
+
+async def elenco_inviti(token: str) -> list:
+    """Elenco dei codici invito (solo admin: la RLS lo garantisce)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                f"{_base()}/rest/v1/inviti"
+                "?select=id,codice,nota,max_usi,usi,attivo,created_at"
+                "&order=created_at.desc",
+                headers=_get_headers(token),
+            )
+            if r.status_code < 300:
+                return r.json()
+    except Exception:
+        pass
+    return []
+
+
+async def crea_invito(
+    token: str, codice: str, nota: str, max_usi: int | None
+) -> str | None:
+    """Crea un nuovo codice invito (solo admin)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"{_base()}/rest/v1/inviti",
+                headers=_headers(token, "return=representation"),
+                json={"codice": codice, "nota": nota, "max_usi": max_usi},
+            )
+            if r.status_code < 300:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    return d[0].get("id")
+    except Exception:
+        pass
+    return None
+
+
+async def imposta_stato_invito(token: str, invito_id: str, attivo: bool) -> None:
+    """Attiva o disattiva un codice invito (solo admin)."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.patch(
+                f"{_base()}/rest/v1/inviti?id=eq.{invito_id}",
+                headers=_headers(token, "return=minimal"),
+                json={"attivo": attivo},
+            )
+    except Exception:
+        pass
 
 
 async def spazio_usato(token: str) -> int:

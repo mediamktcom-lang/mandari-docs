@@ -234,12 +234,77 @@ export async function getAudit(): Promise<VoceAudit[]> {
   return dati.attivita ?? [];
 }
 
-export async function getAccount(): Promise<{ piano: string }> {
+export type Account = { piano: string; is_admin: boolean; attivato: boolean };
+
+export async function getAccount(): Promise<Account> {
   const risposta = await fetch(`${API_URL}/api/account`, {
     headers: { ...(await authHeader()) },
   });
-  if (!risposta.ok) return { piano: "free" };
+  if (!risposta.ok) return { piano: "free", is_admin: false, attivato: false };
   return risposta.json();
+}
+
+export async function riscattaInvito(
+  codice: string
+): Promise<{ ok: boolean; errore?: string }> {
+  const modulo = new FormData();
+  modulo.append("codice", codice);
+  const risposta = await fetch(`${API_URL}/api/invito/riscatta`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
+  return risposta.json();
+}
+
+export type Invito = {
+  id: string;
+  codice: string;
+  nota: string;
+  max_usi: number | null;
+  usi: number;
+  attivo: boolean;
+  created_at: string;
+};
+
+export async function getInviti(): Promise<Invito[]> {
+  const risposta = await fetch(`${API_URL}/api/inviti`, {
+    headers: { ...(await authHeader()) },
+  });
+  if (!risposta.ok) return [];
+  const dati = await risposta.json();
+  return dati.inviti ?? [];
+}
+
+export async function creaInvito(
+  codice: string,
+  nota: string,
+  maxUsi: number | null
+): Promise<{ id?: string; errore?: string }> {
+  const modulo = new FormData();
+  modulo.append("codice", codice);
+  modulo.append("nota", nota);
+  if (maxUsi != null) modulo.append("max_usi", String(maxUsi));
+  const risposta = await fetch(`${API_URL}/api/inviti`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
+  return risposta.json();
+}
+
+export async function impostaStatoInvito(
+  id: string,
+  attivo: boolean
+): Promise<void> {
+  const modulo = new FormData();
+  modulo.append("id", id);
+  modulo.append("attivo", attivo ? "true" : "false");
+  await fetch(`${API_URL}/api/inviti/stato`, {
+    method: "POST",
+    headers: { ...(await authHeader()) },
+    body: modulo,
+  });
 }
 
 export async function getSpazio(): Promise<{ usato: number; quota: number }> {
